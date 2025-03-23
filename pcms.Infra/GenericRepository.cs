@@ -17,20 +17,27 @@ namespace pcms.Infra
 
         public async Task<T> GetByIdAsync(string id) => await _dbSet.FindAsync(id);
         public async Task<IEnumerable<T>> GetAllAsync() => await _dbSet.ToListAsync();
-        public async Task<bool> AddAsync(T entity)
+        public async Task AddAsync(T entity)
         {
-           await _dbSet.AddAsync(entity);
-          var res = await _context.SaveChangesAsync();
-            if (res > 0)
+            try
             {
-                return true;
+               await _dbSet.AddAsync(entity);
             }
-            else
+            catch (Exception)
             {
-                return false;
+                throw;
             }
+          //var res = await _context.SaveChangesAsync();
+          //  if (res > 0)
+          //  {
+          //      return true;
+          //  }
+          //  else
+          //  {
+          //      return false;
+          //  }
         }
-        public void Update(T entity) => _dbSet.Update(entity);
+        public async Task Update(T entity) => _dbSet.Update(entity);
        
         public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
     }

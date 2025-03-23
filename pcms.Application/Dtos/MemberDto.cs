@@ -16,5 +16,9 @@ namespace pcms.Application.Dto
         public DateTime DateOfBirth { get; set; }
         public bool IsActive { get; set; } = true;
         public bool IsDeleted { get; set; } = false;
+        public bool IsLegibleforBenefit { get; set; } = false;
+        public string RSAPin { get; set; }
+        public DateTime? RegistrationDate { get; set; }
+
     }
 }

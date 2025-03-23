@@ -10,6 +10,7 @@ namespace pcms.Domain.Interfaces
     public interface IUnitOfWorkRepo : IDisposable
     {
         IMemberServiceRepo Members { get; }
+        IContributionRepo Contributions { get; }
       //  IGenericRepository<Contribution> Contributions { get; }
         Task<int> CompleteAsync();
     }

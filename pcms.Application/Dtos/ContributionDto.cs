@@ -12,6 +12,6 @@ namespace pcms.Application.Dto
         public decimal Amount { get; set; }
         public ContributionType Type { get; set; } = ContributionType.Monthly;
         public DateTime ContributionDate { get; set; } = DateTime.Now;
-       // public Member Member { get; set; }
+        // public Member Member { get; set; }
     }
 }

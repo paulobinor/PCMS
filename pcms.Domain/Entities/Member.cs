@@ -11,6 +11,7 @@ namespace pcms.Domain.Entities
     {
         [Key]
         public string MemberId { get; set; } = Guid.NewGuid().ToString();
+        public string EmployerId { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
         public string? Phone { get; set; }
@@ -18,5 +19,8 @@ namespace pcms.Domain.Entities
         public bool IsActive { get; set; } = true;
         public ICollection<Contribution> Contributions { get; set; } = new List<Contribution>();
         public bool IsDeleted { get; set; } = false;
+        public string RSAPin { get; set; } = $"PIN{new Random().Next(00000, 99999)}";
+        public DateTime RegistrationDate { get; set; } = DateTime.Now;
+        public bool IsEligibleForBenefit { get; set; } = false;
     }
 }

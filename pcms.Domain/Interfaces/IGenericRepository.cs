@@ -10,8 +10,8 @@ namespace pcms.Domain.Interfaces
     {
         Task<T> GetByIdAsync(string id);
         Task<IEnumerable<T>> GetAllAsync();
-        Task<bool> AddAsync(T entity);
-        void Update(T entity);
+        Task AddAsync(T entity);
+        Task Update(T entity);
        // Task DeleteAsync(string id);
         Task<int> SaveChangesAsync();
     }

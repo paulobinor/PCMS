@@ -1,14 +1,18 @@
 ﻿using pcms.Domain.Entities;
 using pcms.Domain.Enums;
+using System;
 
 namespace pcms.Domain.Interfaces
 {
     public interface IMemberServiceRepo
     {
+        Task AddMember(Member member);
+
         Task AddContributionAsync(Contribution contribution);
 
-        Task<decimal> GetTotalContributionsAsync(string memberId, DateTime startDate, DateTime endDate);
-
-        Task<string> GenerateStatementAsync(string memberId, DateTime startDate, DateTime endDate);
+        Task<string> RemoveMember(string memberId);
+        Task<List<Member>> GetAllMembers();
+        Task UpdateMember(Member member);
+        Task<Member> GetMember(string memberId);
     }
 }

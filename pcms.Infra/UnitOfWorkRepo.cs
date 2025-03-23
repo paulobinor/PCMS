@@ -6,6 +6,7 @@ namespace pcms.Infra
     {
         private readonly AppDBContext _context;
         public IMemberServiceRepo Members { get; }
+        public IContributionRepo Contributions { get; }
         public UnitOfWorkRepo(AppDBContext context)
         {
             _context = context;
@@ -13,6 +14,7 @@ namespace pcms.Infra
         }
 
         public async Task<int> CompleteAsync() => await _context.SaveChangesAsync();
+
         public void Dispose() => _context.Dispose();
     }
 }

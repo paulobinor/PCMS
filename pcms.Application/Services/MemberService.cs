@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using pcms.Application.Dto;
 using pcms.Application.Validation;
 using pcms.Domain.Entities;
@@ -10,63 +11,28 @@ using pcms.Infra;
 
 namespace pcms.Application.Services
 {
-    public class MemberService : GenericRepository<Member>, IMemberService
+    public class MemberService : IMemberService
     {
         private readonly IUnitOfWorkRepo _unitOfWorkRepo;
         private readonly IMapper _mapper;
-        public MemberService(IUnitOfWorkRepo unitOfWorkRepo, AppDBContext context, ModelValidationService validationService) : base(context)
+        public MemberService(IUnitOfWorkRepo unitOfWorkRepo, AppDBContext context, ModelValidationService validationService)
         {
             _unitOfWorkRepo = unitOfWorkRepo;
             _mapper = MappingConfig.PcmsMapConfig().CreateMapper();
         }
 
-        public async Task<int> AddContribution(ContributionDto contributionDto)
+       
+       
+
+        public async Task<bool> DeleteMemberRecord(string memberId)
         {
-            try
+            var updateMember = await _unitOfWorkRepo.Members.RemoveMember(memberId);
+            var result = await _unitOfWorkRepo.CompleteAsync();
+            if (result > 0)
             {
-                var member = await GetByIdAsync(contributionDto.MemberId);
-                if (member == null)
-                    throw new Exception("Member not found.");
-
-                var contribution = _mapper.Map<Contribution>(contributionDto);
-                await _unitOfWorkRepo.Members.AddContributionAsync(contribution);
-                return await _unitOfWorkRepo.CompleteAsync();
+                return true;
             }
-            catch (Exception ex)
-            {
-                throw;
-            }
-        }
-
-        public async Task<string> GetTotalContributions(string memberId)
-        {
-            try
-            {
-                var member = GetByIdAsync(memberId);
-                if (member == null) { return "Member not found"; }
-                return (await _unitOfWorkRepo.Members.GetTotalContributionsAsync(memberId)).ToString();
-            }
-            catch (Exception)
-            {
-                throw;
-            }
-        }
-
-        public async Task<string> GenerateStatement(string memberId)
-        {
-            var member = GetByIdAsync(memberId);
-            if (member == null) { return "Member not found"; }
-
-            return await _unitOfWorkRepo.Members.GenerateStatementAsync(memberId);
-        }
-
-        public async Task<string> DeleteMemberRecord(string memberId)
-        {
-            var member = await GetByIdAsync(memberId);
-            if (member == null) { return "Member not found"; }
-            member.IsDeleted = true;
-            Update(member);
-            return (await SaveChangesAsync()).ToString();
+            return false;
 
             //return await  _unitOfWorkRepo.Members.GenerateStatementAsync(memberId);
 
@@ -75,8 +41,14 @@ namespace pcms.Application.Services
         public async Task<bool> AddNewMember(MemberDto memberDto)
         {
             var member = _mapper.Map<Member>(memberDto);
-            var result = await AddAsync(member)? true : false;
-            return result;
+             await _unitOfWorkRepo.Members.AddMember(member);
+           var result = await _unitOfWorkRepo.CompleteAsync();
+            return result > 0 ? true : false ;
+        }
+
+        public async Task GenerateBenefitEligibility()
+        {
+            
         }
     }
 }

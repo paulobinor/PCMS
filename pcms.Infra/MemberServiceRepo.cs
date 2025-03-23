@@ -14,41 +14,83 @@ namespace pcms.Infra
             _context = context;
         }
 
-        public async Task AddContributionAsync(Contribution contribution)
+        public async Task AddMember(Member member)
         {
             try
             {
-                var member = await _context.Members.FindAsync(contribution.MemberId);
-                if (member == null)
-                    throw new Exception("Member not found.");
-
-                await _context.Contributions.AddAsync(contribution);
+                await AddAsync(member);
+                //if (member == null)
+                //{
+                //    //"log Not Found";
+                //}
+                //return "Success";
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 throw;
             }
         }
 
-        public async Task<decimal> GetTotalContributionsAsync(string memberId, DateTime startDate, DateTime endDate)
+        public async Task UpdateMember(Member member)
         {
-
-            return await _context.Contributions
-                .Where(c => c.MemberId == memberId && c.ContributionDate >= startDate.Date && c.ContributionDate <= endDate.Date)
-                .SumAsync(c => c.Amount);
+            try
+            {
+                await Update(member);
+                //if (member == null)
+                //{
+                //    //"log Not Found";
+                //}
+                //return "Success";
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
 
-        public async Task<string> GenerateStatementAsync(string memberId, DateTime startDate, DateTime endDate)
+        public async Task RemoveMember(string memberId)
         {
-            var member = await _context.Members
-              //  .Include(m => m.Contributions)
-                .FirstOrDefaultAsync(m => m.MemberId == memberId);
-
-            //if (member == null)
-            //    return "Member not found.";
-
-            var total = await GetTotalContributionsAsync(memberId, startDate, endDate);
-            return $"Statement for {member.Name}: Total Contributions = {total:C}";
+            try
+            {
+                var member = await GetByIdAsync(memberId);
+                if (member == null) 
+                {
+                    //"log Not Found";
+                }
+                member.IsDeleted = true;
+                Update(member);
+                //return "Success";
+            }
+            catch (Exception)
+            {
+                throw;
+            }
         }
+
+        public async Task<List<Member>> GetAllMembers()
+        {
+            try
+            {
+                return (await GetAllAsync()).ToList();
+                //return "Success";
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+        public async Task<Member> GetMember(string MemberId)
+        {
+            try
+            {
+                return await GetByIdAsync(MemberId);
+                //return "Success";
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
+
     }
 }
