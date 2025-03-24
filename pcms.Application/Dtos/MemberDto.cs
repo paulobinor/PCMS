@@ -19,6 +19,6 @@ namespace pcms.Application.Dto
         public bool IsLegibleforBenefit { get; set; } = false;
         public string RSAPin { get; set; }
         public DateTime? RegistrationDate { get; set; }
-
+        public string Employer { get; internal set; }
     }
 }

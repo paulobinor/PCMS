@@ -14,5 +14,6 @@ namespace pcms.Domain.Interfaces
         Task<List<Member>> GetAllMembers();
         Task UpdateMember(Member member);
         Task<Member> GetMember(string memberId);
+        Task<Member> GetMemberWithContributions(string MemberId);
     }
 }

@@ -42,7 +42,7 @@ namespace pcms.Api.Controllers
             var validationResult = _validationService.Validate(contributionDto);
             if (!validationResult.IsValid)
             {
-                return ValidationProblem(validationResult.customProblemDetail.Detail);
+                return BadRequest(validationResult.customProblemDetail.Detail);
             }
             return Ok(await _memberService.AddContribution(contributionDto));
         }

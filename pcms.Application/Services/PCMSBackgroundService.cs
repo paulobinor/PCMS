@@ -1,22 +1,23 @@
-﻿using pcms.Domain.Entities;
+﻿using pcms.Application.Interfaces;
+using pcms.Domain.Entities;
 using pcms.Domain.Enums;
 using pcms.Domain.Interfaces;
 
 namespace pcms.Application.Services
 {
-    public class PCMSBackgroundService
+    public class PCMSBackgroundService : IPCMSBackgroundService
     {
         private readonly IUnitOfWorkRepo _unitOfWorkRepo;
         public PCMSBackgroundService()
         {
-                
+
         }
         public async Task UpdateBenefitEligibility()
         {
             var list = await _unitOfWorkRepo.Members.GetAllMembers();
             foreach (var member in list)
             {
-                var lastContributionDate = member.Contributions.Max(x=>x.ContributionDate);
+                var lastContributionDate = member.Contributions.Max(x => x.ContributionDate);
                 if (lastContributionDate != null)
                 {
                     if ((lastContributionDate.Month - member.RegistrationDate.Month) >= 6)
@@ -44,11 +45,11 @@ namespace pcms.Application.Services
                 contribution.Remarks = "Duplicate contribution";
                 IsValidTransaction = false;
             }
-           
+
 
             if (IsValidTransaction)
             {
-                if(contribution.Amount <= 0)
+                if (contribution.Amount <= 0)
                 {
                     IsValidTransaction = false;
                     contribution.IsValid = false;
@@ -64,16 +65,16 @@ namespace pcms.Application.Services
             int currentMonth = DateTime.Now.Month; // Get the current month
             foreach (var member in list)
             {
-               var duplicates = member.Contributions
-                    .Where(c => c.YearForContribution == DateTime.Now.Year)
-                    .GroupBy(c => c.MonthForContribution)
-                    .Where(g => g.Count() > 1)// Find months with more than one contribution
-                    .Select(g => g.Key) // Get the month numbers
-                    .ToList();
+                var duplicates = member.Contributions
+                     .Where(c => c.YearForContribution == DateTime.Now.Year)
+                     .GroupBy(c => c.MonthForContribution)
+                     .Where(g => g.Count() > 1)// Find months with more than one contribution
+                     .Select(g => g.Key) // Get the month numbers
+                     .ToList();
 
 
 
-                HashSet<int> contributedMonths = 
+                HashSet<int> contributedMonths =
                     new HashSet<int>(member.Contributions
                     .Where(c => c.YearForContribution == DateTime.Now.Year && c.Type == ContributionType.Monthly)
                     .Select(c => c.MonthForContribution));

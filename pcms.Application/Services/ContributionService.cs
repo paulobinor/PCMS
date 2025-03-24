@@ -12,18 +12,11 @@ namespace pcms.Application.Services
             _unitOfWorkRepo = unitOfWorkRepo;
         }
         
-        public async Task<Contribution> GetContributionAsync()
-        {
-            var res = _unitOfWorkRepo.Contributions
-        }
-
         public async Task<string> GetTotalContributions(string memberId, DateTime startDate, DateTime endDate)
         {
             try
             {
-                var member = GetByIdAsync(memberId);
-                if (member == null) { return "Member not found"; }
-                return (await _unitOfWorkRepo.Members.GetTotalContributionsAsync(memberId, startDate, endDate)).ToString();
+                return (await _unitOfWorkRepo.Contributions.GetTotalContributionsAsync(memberId, startDate, endDate)).ToString();
             }
             catch (Exception)
             {
@@ -34,7 +27,7 @@ namespace pcms.Application.Services
         {
             try
             {
-                var member = await GetByIdAsync(contributionDto.MemberId);
+                var member = await _unitOfWorkRepo.Members.GetMember(contributionDto.MemberId);
                 if (member == null)
                     throw new Exception("Member not found.");
 
@@ -49,10 +42,7 @@ namespace pcms.Application.Services
         }
         public async Task<string> GenerateStatement(string memberId, DateTime startDate, DateTime endDate)
         {
-            var member = GetByIdAsync(memberId);
-            if (member == null) { return "Member not found"; }
-
-            return await _unitOfWorkRepo.Members.GenerateStatementAsync(memberId, startDate, endDate);
+            return await _unitOfWorkRepo.Contributions.GenerateStatementAsync(memberId, startDate, endDate);
         }
     }
 }

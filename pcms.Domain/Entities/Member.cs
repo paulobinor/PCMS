@@ -11,7 +11,7 @@ namespace pcms.Domain.Entities
     {
         [Key]
         public string MemberId { get; set; } = Guid.NewGuid().ToString();
-        public string EmployerId { get; set; }
+        public string Employer { get; set; }
         public string Name { get; set; }
         public string Email { get; set; }
         public string? Phone { get; set; }

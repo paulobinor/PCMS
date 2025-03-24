@@ -91,6 +91,18 @@ namespace pcms.Infra
                 throw;
             }
         }
+        public async Task<Member> GetMemberWithContributions(string MemberId)
+        {
+            try
+            {
+                return  await _context.Members.Include("Contributions").FirstOrDefaultAsync(m => m.MemberId == MemberId);
+                //return "Success";
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
 
     }
 }

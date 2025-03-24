@@ -42,24 +42,17 @@ namespace pcms.Infra
             }
         }
 
-        public async Task<decimal> GetTotalContributionsAsync(string memberId, DateTime startDate, DateTime endDate)
-        {
-            return await _context.Contributions
-                .Where(c => c.MemberId == memberId && c.ContributionDate >= startDate.Date && c.ContributionDate <= endDate.Date)
-                .SumAsync(c => c.Amount);
-        }
-        public async Task<string> GenerateStatementAsync(string memberId, DateTime startDate, DateTime endDate)
-        {
-            var member = await _context.Members
-                //  .Include(m => m.Contributions)
-                .FirstOrDefaultAsync(m => m.MemberId == memberId);
+       
+        //public async Task<string> GenerateStatementAsync(string memberId, DateTime startDate, DateTime endDate)
+        //{
 
-            //if (member == null)
-            //    return "Member not found.";
+        //    var member = await GetByIdAsync(memberId);
+        //    if (member == null) { throw new Exception("Member not found"); }
 
-            var total = await GetTotalContributionsAsync(memberId, startDate, endDate);
-            return $"Statement for {member.Name}: Total Contributions = {total:C}";
-        }
+
+        //    var total = await GetTotalContributionsAsync(memberId, startDate, endDate);
+        //    return $"Statement for {member.Name}: Total Contributions = {total:C}";
+        //}
 
         public async Task<Contribution> GetContribution(string contributionId)
         {
