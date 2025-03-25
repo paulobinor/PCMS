@@ -93,26 +93,29 @@ Create users to manage/access the endpoints provided: https://localhost:7228/api
 ### 🔹 Member Management
 | Endpoint                              | Method   | Description                    |
 |---------------------------------------|----------|--------------------------------|
-| `/api/members/addnewmember`           | `POST`   | Register a new member          |
+| `/api/members/add`                    | `POST`   | Register a new member          |
 | `/api/members/Get/{id}`               | `GET`    | Retrieve member details        |
 | `/api/members/Update/{id}`            | `PUT`    | Update member details          |
-| `/api/members/Remove{id}`             | `POST`   | Soft-delete a member           |
+| `/api/members/Remove/{id}`            | `DELETE` | Soft-delete a member           |
 
 ### 🔹 Contribution Management
 | Endpoint                                            | Method | Description                            |
 |-----------------------------------------------------|--------|----------------------------------------|
 | `/api/contributions/Add`                            | `POST` | Add a new contribution                 |
+| `/api/contributions/Update`                         | `PUT`  | Update contribution details          | 
 | `/api/contributions/{id}`                           | `GET`  | Retrieve contribution details          | 
 | `/api/contributions/Member/{memberId}`              | `GET`  | Get member a contributions             |
 | `/api/contributions/list`                           | `GET`  | Get all contributions for all members  |
-| `/api/contributions/reports/{memberId}`             | `GET`  | Get total member contribution          |
+| `/api/contributions/total/{memberId}`               | `GET`  | Get total member contribution          |
 | `/api/contributions/statement/{memberId}/Statement` | `GET`  | Generate a contribution statement      |
 
 ### 🔹 Background Jobs & Hangfire
-| Endpoint                | Method | Description                  |
-|------------------------ |--------|------------------------------|
-| `/hangfire`             | `GET`  | Access Hangfire dashboard    |
-| `/api/jobs/retryFailed` | `POST` | Retry failed background jobs |
+| Endpoint                              | Method | Description                  |
+|-------------------------------------- |--------|------------------------------|
+| `/hangfire`                           | `GET`  | Access Hangfire dashboard    |
+| `/api/jobs/retryFailed`               | `POST` | Retry failed background jobs |
+| `/api/jobs/{MemberId}/UpdateInterest` | `POST` | Retry failed background jobs |
+| `/api/jobs/retryFailed`               | `POST` | Retry failed background jobs |
 
 ## Unit Testing
 Run the unit tests using:
