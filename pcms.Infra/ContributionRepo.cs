@@ -34,6 +34,7 @@ namespace pcms.Infra
                 if (member == null)
                     throw new Exception("Member not found.");
 
+                contribution.EntryNumber = (await _context.Contributions.Where(m=>m.MemberId == contribution.MemberId).CountAsync()) + 1;
                 await _context.Contributions.AddAsync(contribution);
             }
             catch (Exception ex)

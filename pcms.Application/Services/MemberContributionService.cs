@@ -1,5 +1,4 @@
 ﻿using pcms.Application.Interfaces;
-using pcms.Domain.Entities;
 using pcms.Domain.Interfaces;
 
 namespace pcms.Application.Services
@@ -25,7 +24,7 @@ namespace pcms.Application.Services
             return res;
         }
        
-        public async Task<ApiResponse<string>> GenerateStatement(string memberId, DateTime startDate, string DateTime)
+        public async Task<ApiResponse<string>> GenerateStatement(string memberId)
         {
             var member = await _unitOfWorkRepo.Members.GetMemberWithContributions(memberId);
             var totalContributionAmount = member.Contributions.Where(c => c.IsValid && c.IsProcessed).Sum(c => c.Amount);

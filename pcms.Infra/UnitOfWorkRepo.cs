@@ -1,4 +1,5 @@
-﻿using pcms.Domain.Interfaces;
+﻿using Microsoft.Extensions.Logging;
+using pcms.Domain.Interfaces;
 
 namespace pcms.Infra
 {
@@ -7,10 +8,13 @@ namespace pcms.Infra
         private readonly AppDBContext _context;
         public IMemberServiceRepo Members { get; }
         public IContributionRepo Contributions { get; }
-        public UnitOfWorkRepo(AppDBContext context)
+       // private readonly ILogger<MemberServiceRepo> _logger;
+        public UnitOfWorkRepo(AppDBContext context, ILogger<MemberServiceRepo> logger)
         {
             _context = context;
-            Members = new MemberServiceRepo(context);
+           // _logger = logger;
+            Members = new MemberServiceRepo(context, logger);
+            Contributions = new ContributionRepo(context);
         }
 
         public async Task<int> CompleteAsync() => await _context.SaveChangesAsync();

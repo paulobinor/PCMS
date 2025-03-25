@@ -1,3 +1,5 @@
+using Castle.Core.Logging;
+using Microsoft.Extensions.Logging;
 using Moq;
 using pcms.Application.Dto;
 using pcms.Application.Interfaces;
@@ -11,6 +13,7 @@ namespace pcms.Tests
     public class MemberServiceTests
     {
         private Mock<IValidationService> _validationService;
+        private Mock<ILogger<MemberService>> _loggerMock;
         private Mock<IUnitOfWorkRepo> _unitOfWorkMock;
         private Mock<ICacheService>  _cacheServiceMock;
         private Mock<IMemberServiceRepo> _memberServiceRepo;
@@ -21,13 +24,14 @@ namespace pcms.Tests
         {
 
             _validationService = new Mock<IValidationService>();
+            _loggerMock = new Mock<ILogger<MemberService>>();
             _cacheServiceMock = new Mock<ICacheService>();
             _memberServiceRepo = new Mock<IMemberServiceRepo>();
             _unitOfWorkMock = new Mock<IUnitOfWorkRepo>();
             _memberRepositoryMock = new Mock<IGenericRepository<Member>>();
             _unitOfWorkMock.Setup(u => u.Members).Returns(_memberServiceRepo.Object);
            // _mockDbContext = new Mock<AppDBContext>();
-            _memberService = new MemberService(_unitOfWorkMock.Object, _validationService.Object, _cacheServiceMock.Object );
+            _memberService = new MemberService(_unitOfWorkMock.Object, _validationService.Object, _cacheServiceMock.Object, _loggerMock.Object);
         }
 
         [Fact]

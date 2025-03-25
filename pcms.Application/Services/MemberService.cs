@@ -2,6 +2,7 @@
 using AutoMapper.Execution;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Microsoft.Identity.Client;
 using Newtonsoft.Json;
 using pcms.Application.Dto;
@@ -20,37 +21,42 @@ namespace pcms.Application.Services
         private readonly IMapper _mapper;
         private IValidationService _validationService;
         private readonly ICacheService _cacheService;
-        public MemberService(IUnitOfWorkRepo unitOfWorkRepo, IValidationService validationService, ICacheService cacheService)
+        private readonly ILogger<MemberService> _logger;
+        public MemberService(IUnitOfWorkRepo unitOfWorkRepo, IValidationService validationService, ICacheService cacheService, ILogger<MemberService> logger)
         {
             _unitOfWorkRepo = unitOfWorkRepo;
             _mapper = MappingConfig.PcmsMapConfig().CreateMapper();
             _validationService = validationService;
             _cacheService = cacheService;
+            _logger = logger;
         }
 
         public async Task<ApiResponse<string>> DeleteMemberRecord(string memberId)
         {
-             await _unitOfWorkRepo.Members.RemoveMember(memberId);
+            await _unitOfWorkRepo.Members.RemoveMember(memberId);
             var result = await _unitOfWorkRepo.CompleteAsync();
             if (result > 0)
             {
+                _logger.LogInformation("Member details have been deleted successfully");
                 return new ApiResponse<string> { Data = "Success", ResponseCode = "00", ResponseMessage = "Record successfully deleted"};
             }
+
+            _logger.LogError("failed to delete member details.");
             return new ApiResponse<string> { Data = "", ResponseCode = "01", ResponseMessage = "We could not execute the request" };
         }
 
         public async Task<ApiResponse<string>> AddNewMember(MemberDto memberDto)
         {
-            var validateResult = await _validationService.ValidateEmployer(memberDto.Employer);
-            if (validateResult != "00")
-            {
-                return new ApiResponse<string> { Data = "", ResponseCode = "01", ResponseMessage = "Employer verification failed!" };
-            }
             var member = _mapper.Map<Domain.Entities.Member>(memberDto);
              await _unitOfWorkRepo.Members.AddMember(member);
            var result = await _unitOfWorkRepo.CompleteAsync();
-
-            return result > 0 ? new ApiResponse<string> { Data = "Success", ResponseCode = "00", ResponseMessage = "member successfully created" } : new ApiResponse<string> { Data = "", ResponseCode = "01", ResponseMessage = "We could not execute the request!" };
+            if (result > 0)
+            {
+                _logger.LogInformation("Member details have been created successfully");
+                return new ApiResponse<string> { Data = "Success", ResponseCode = "00", ResponseMessage = "member successfully created" };
+            }
+            _logger.LogError("failed to add new member details.");
+            return new ApiResponse<string> { Data = "", ResponseCode = "01", ResponseMessage = "We could not execute the request!" };
         }
 
         public async Task<ApiResponse<string>> UpdateMember(MemberDto memberDto)
@@ -59,7 +65,14 @@ namespace pcms.Application.Services
             var result =  await _unitOfWorkRepo.Members.UpdateMember(member).ContinueWith((n) => _unitOfWorkRepo.CompleteAsync());
 
             _cacheService.SetData(memberDto.MemberId, JsonConvert.SerializeObject(memberDto), 36000);
-            return result.Result > 0 ? new ApiResponse<string> { Data = "Success", ResponseCode = "00", ResponseMessage = "Record successfully deleted" } : new ApiResponse<string> { Data = "", ResponseCode = "01", ResponseMessage = "We could not execute the request!" };
+            if (result.Result > 0)
+            {
+                _logger.LogInformation("Member details have been updated successfully");
+                return new ApiResponse<string> { Data = "Success", ResponseCode = "00", ResponseMessage = "Record successfully updated" };
+            }
+
+            _logger.LogError("failed to update member details.");
+            return new ApiResponse<string> { Data = "", ResponseCode = "01", ResponseMessage = "We could not execute the request!" };
         }
 
         public async Task<ApiResponse<MemberDto>> GetMember(string memberId)
@@ -82,9 +95,12 @@ namespace pcms.Application.Services
                 response.ResponseMessage = "Success";
                 response.ResponseCode = "00";
                 _cacheService.SetData(memberId, JsonConvert.SerializeObject(memberDto), 36000);
+
+                _logger.LogInformation("Member details retrieved successfully");
             }
             else
             {
+                _logger.LogInformation("Failed to retreive Member details");
                 response.ResponseMessage = "failed to retreive Member details";
                 response.ResponseCode = "01";
             }
@@ -111,13 +127,14 @@ namespace pcms.Application.Services
                 response.ResponseMessage = "Success";
                 response.ResponseCode = "00";
                 _cacheService.SetData(memberId, JsonConvert.SerializeObject(membersDto), 36000);
+                _logger.LogInformation("Member details retrieved successfully");
             }
             else
             {
+                _logger.LogInformation("Failed to retreive Member details");
                 response.ResponseMessage = "failed to retreive Member details";
                 response.ResponseCode = "01";
             }
-
             return response;
         }
 

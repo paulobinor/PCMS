@@ -1,3 +1,4 @@
+using FluentValidation;
 using Hangfire;
 using Hangfire.Common;
 using Hangfire.Server;
@@ -8,8 +9,11 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using pcms.Api;
+using pcms.Application.Dto;
 using pcms.Application.Interfaces;
 using pcms.Application.Services;
+using pcms.Application.Validation;
+using pcms.Domain.Entities;
 using pcms.Domain.Interfaces;
 using pcms.Infra;
 using System.Text;
@@ -28,6 +32,9 @@ builder.Services.AddScoped<IMemberService, MemberService>();
 builder.Services.AddScoped<IValidationService, ValidationService>();
 builder.Services.AddScoped<IMemberContributionService, MemberContributionService>();
 builder.Services.AddScoped<IPCMSBackgroundService, PCMSBackgroundService>();
+builder.Services.AddScoped<IUserManagementService, UserManagementService>();
+builder.Services.AddScoped<IContributionRepo, ContributionRepo>();
+builder.Services.AddScoped<IContributionService, ContributionService>();
 builder.Services.AddScoped<ICacheService, MemoryCacheService>();
 builder.Services.AddDbContext<AppDBContext>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddHangfire(configuration => configuration
@@ -36,7 +43,14 @@ builder.Services.AddHangfire(configuration => configuration
        .UseRecommendedSerializerSettings()
        .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection")));
 builder.Services.AddScoped<BackGroundJobProcess>();
+builder.Services.AddScoped<ModelValidationService>();
+builder.Services.AddTransient<IValidator<AddContributionDto>, AddContributionDtoValidator>();
+builder.Services.AddTransient<IValidator<UserLogin>, UserLoginDtoValidator>();
+builder.Services.AddTransient<IValidator<RegisterUser>, RegisterUserDtoValidator>();
 
+builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+    .AddEntityFrameworkStores<AppDBContext>()
+    .AddDefaultTokenProviders();
 
 builder.Services.AddHangfireServer();
 
@@ -45,13 +59,11 @@ builder.Services.AddSingleton<INotificationService, EmailNotificationService>();
 builder.Services.AddSingleton<IFailedTransactionHandler, FailedTransactionHandler>();
 builder.Services.AddSingleton<IServerFilter, HangfireFailedJobListener>();
 
-var app = builder.Build();
-GlobalJobFilters.Filters.Add(app.Services.GetRequiredService<IServerFilter>());
 
 #region JWT Authentication Services
 builder.Services.AddSwaggerGen(option =>
 {
-    option.SwaggerDoc("v1", new OpenApiInfo { Title = "User Management Api", Version = "v1" });
+    option.SwaggerDoc("v1", new OpenApiInfo { Title = "PCMS Api", Version = "v1" });
     option.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
     {
         In = ParameterLocation.Header,
@@ -98,21 +110,26 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.Configure<IdentityOptions>(options => options.SignIn.RequireConfirmedEmail = false);
 #endregion
-using (var scope = app.Services.CreateScope())
-{
-    var services = scope.ServiceProvider;
 
-    try
-    {
-        var jobService = services.GetRequiredService<BackGroundJobProcess>();
-       jobService.ProcessStartupTask(); // Call startup logic
-    }
-        catch (Exception ex)
-    {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while executing startup process.");
-    }
-}
+
+var app = builder.Build();
+GlobalJobFilters.Filters.Add(app.Services.GetRequiredService<IServerFilter>());
+
+//using (var scope = app.Services.CreateScope())
+//{
+//    var services = scope.ServiceProvider;
+
+//    try
+//    {
+//        var jobService = services.GetRequiredService<BackGroundJobProcess>();
+//       jobService.ProcessStartupTask(); // Call startup logic
+//    }
+//        catch (Exception ex)
+//    {
+//        var logger = services.GetRequiredService<ILogger<Program>>();
+//        logger.LogError(ex, "An error occurred while executing startup process.");
+//    }
+//}
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -136,6 +153,8 @@ app.MapHangfireDashboard();
 
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
+app.UseRouting();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

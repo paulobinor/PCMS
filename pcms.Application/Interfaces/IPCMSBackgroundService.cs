@@ -4,7 +4,8 @@
     {
         Task UpdateBenefitEligibility();
         Task UpdateMemberInterest(string memberId);
-        Task ValidateMemberContribution(string contributionId);
+        Task ValidateMemberContribution(string memberId);
         Task ValidateMemberContributions();
+        Task UpdateAllMemberInterest();
     }
 }

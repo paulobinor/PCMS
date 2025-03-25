@@ -23,6 +23,7 @@ namespace pcms.Domain.Entities
         public decimal? CumulativeContribution { get; set; }
         public decimal? CumulativeIntrestAmount { get; set; }
         public decimal? TotalCumulative { get; set; }
+        public int EntryNumber { get; set;}
         // public Member Member { get; set; }
     }
 }

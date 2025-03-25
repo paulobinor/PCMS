@@ -36,7 +36,7 @@ namespace pcms.Application.Services
                     response.ResponseMessage = "Cannot create an account with this email. ";
                     return response;
                 }
-                if (!(await _roleManager.RoleExistsAsync(registerUser.UserRole.ToString())))
+                if (!await _roleManager.RoleExistsAsync(registerUser.UserRole))
                 {
                     response.ResponseCode = "01";
                     response.ResponseMessage = "Invalid role specified";
@@ -64,6 +64,14 @@ namespace pcms.Application.Services
 
                     response.ResponseCode = "00";
                     response.ResponseMessage = "User created successfully";
+                }
+                else
+                {
+                    foreach (var item in res.Errors)
+                    {
+                        response.ResponseMessage += $"{item.Description}, ";
+                    }
+                    response.ResponseCode = "01";
                 }
 
             }

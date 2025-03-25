@@ -13,7 +13,7 @@ namespace pcms.Domain.Entities
 
         [Required(ErrorMessage = "Email is required")]
         public string? Email { get; set; }
-        public UserRoleTypes UserRole { get; set; } = UserRoleTypes.User;
+        public string UserRole { get; set; } = UserRoleTypes.User.ToString();
 
     }
 }

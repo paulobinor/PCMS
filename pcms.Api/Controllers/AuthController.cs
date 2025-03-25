@@ -14,22 +14,15 @@ namespace UserManagementAPI.Controllers
     [Route("api")]
     public class AuthController : ControllerBase
     {
-       
-        private readonly UserManager<IdentityUser> _userManager;
-        private readonly RoleManager<IdentityRole> _roleManager;
-        private readonly IConfiguration _configuration;
         private readonly IUserManagementService _userManagementService;
         private readonly ModelValidationService _validationService;
         // private readonly UserManagement.Service.Email.IEmailService _emailService;
 
         private readonly ILogger<AuthController> _logger;
 
-        public AuthController(ILogger<AuthController> logger, UserManager<IdentityUser> userManager, RoleManager<IdentityRole> roleManager, IConfiguration configuration, IUserManagementService userManagementService, ModelValidationService validationService)
+        public AuthController(ILogger<AuthController> logger, IUserManagementService userManagementService, ModelValidationService validationService)
         {
             _logger = logger;
-            _userManager = userManager;
-            _roleManager = roleManager;
-            _configuration = configuration;
             _userManagementService = userManagementService;
             _validationService = validationService;
         }
@@ -45,7 +38,7 @@ namespace UserManagementAPI.Controllers
                 {
                     return BadRequest(validationResult.customProblemDetail.Detail);
                 }
-                return Ok(_userManagementService.Register(registerUser));
+                return Ok(await _userManagementService.Register(registerUser));
             }
             catch (Exception)
             {
@@ -71,21 +64,6 @@ namespace UserManagementAPI.Controllers
             {
                 throw;
             }
-        }
-
-        private JwtSecurityToken GetToken(List<Claim> authClaims)
-        {
-            var authSigninKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT:Secret"]));
-
-            var token = new JwtSecurityToken(
-
-                issuer: _configuration["JWT:Secret"],
-                audience: _configuration["JWT:Secret"],
-                expires: DateTime.Now.AddHours(1),
-                claims : authClaims,
-                signingCredentials: new SigningCredentials(authSigninKey, SecurityAlgorithms.HmacSha256)
-            );
-            return token;
         }
     }
 }

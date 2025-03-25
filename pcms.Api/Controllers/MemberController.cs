@@ -28,9 +28,11 @@ namespace pcms.Api.Controllers
         [Route("AddNewMember")]
         public async Task<IActionResult> AddNewMember([FromBody] MemberDto memberDto)
         {
+            _logger.LogInformation("Received request to add new member");
             var validationResult = _validationService.Validate(memberDto);
             if (!validationResult.IsValid)
             {
+                _logger.LogError($"Invalid request parameters: {validationResult.customProblemDetail.Detail}");
                 return ValidationProblem(validationResult.customProblemDetail.Detail);
             }
             return Ok(await _memberService.AddNewMember(memberDto));
@@ -40,6 +42,7 @@ namespace pcms.Api.Controllers
         [Route("Get/{Id}")]
         public async Task<IActionResult> GetMember(string Id)
         {
+            _logger.LogInformation("Received request to get member");
             //var validationResult = _validationService.Validate(Id);
             //if (!validationResult.IsValid)
             //{
@@ -56,6 +59,7 @@ namespace pcms.Api.Controllers
         [Route("Remove")]
         public async Task<IActionResult> RemoveMember([FromBody] string MemberId)
         {
+            _logger.LogInformation("Received request to remove member");
             //var validationResult = _validationService.Validate(Id);
             //if (!validationResult.IsValid)
             //{
@@ -63,6 +67,7 @@ namespace pcms.Api.Controllers
             //}
             if (string.IsNullOrEmpty(MemberId))
             {
+                _logger.LogInformation("Invalid Id provided.");
                 return BadRequest(new ApiResponse<string> { ResponseCode = "01", ResponseMessage = "Invalid Id provided" });
             }
             return Ok(await _memberService.DeleteMemberRecord(MemberId));

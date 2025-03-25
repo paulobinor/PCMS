@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using pcms.Domain.Entities;
 using pcms.Domain.Enums;
 using pcms.Domain.Interfaces;
@@ -8,10 +9,12 @@ namespace pcms.Infra
     public class MemberServiceRepo : GenericRepository<Member>, IMemberServiceRepo
     {
         public AppDBContext _context { get; }
+        private readonly ILogger<MemberServiceRepo> _logger;
 
-        public MemberServiceRepo(AppDBContext context) : base(context)
+        public MemberServiceRepo(AppDBContext context, ILogger<MemberServiceRepo> logger) : base(context)
         {
             _context = context;
+            _logger = logger;
         }
 
         public async Task AddMember(Member member)
@@ -19,11 +22,6 @@ namespace pcms.Infra
             try
             {
                 await AddAsync(member);
-                //if (member == null)
-                //{
-                //    //"log Not Found";
-                //}
-                //return "Success";
             }
             catch (Exception)
             {
@@ -35,12 +33,9 @@ namespace pcms.Infra
         {
             try
             {
+                var exists = await GetByIdAsync(member.MemberId);
+               
                 Update(member);
-                //if (member == null)
-                //{
-                //    //"log Not Found";
-                //}
-                //return "Success";
             }
             catch (Exception)
             {
@@ -53,15 +48,12 @@ namespace pcms.Infra
             try
             {
                 var member = await GetByIdAsync(memberId);
-                if (member == null) 
-                {
-                    //"log Not Found";
-                }
+               
                 member.IsDeleted = true;
                 Update(member);
                 //return "Success";
             }
-            catch (Exception)
+            catch (Exception ex)
             {
                 throw;
             }
@@ -83,7 +75,13 @@ namespace pcms.Infra
         {
             try
             {
-                return await GetByIdAsync(MemberId);
+                var member = await GetByIdAsync(MemberId);
+                if (member == null)
+                {
+                    throw new Exception($"Member with Id:{MemberId} Not Found! or does not exist");
+                    //"log Not Found";
+                }
+                return null;
                 //return "Success";
             }
             catch (Exception)

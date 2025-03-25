@@ -17,6 +17,7 @@ namespace pcms.Application
             {
                 config.CreateMap<MemberDto, Member>().ReverseMap();
                 config.CreateMap<ContributionDto, Contribution>().ReverseMap();
+                config.CreateMap<AddContributionDto, Contribution>().ReverseMap();
             });
             return MappingConfig;
         }

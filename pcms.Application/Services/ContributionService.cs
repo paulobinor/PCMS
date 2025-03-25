@@ -18,17 +18,19 @@ namespace pcms.Application.Services
         private readonly IMapper _mapper;
         private readonly ICacheService _cacheService;
         private readonly ILogger<ContributionService> _logger;
+        private readonly IBackgroundJobClient _backgroundJobClient;
 
-        public ContributionService(IUnitOfWorkRepo unitOfWorkRepo, ICacheService cacheService, IPCMSBackgroundService ipcmsBackgroundService, ILogger<ContributionService> logger)
+        public ContributionService(IUnitOfWorkRepo unitOfWorkRepo, ICacheService cacheService, IPCMSBackgroundService ipcmsBackgroundService, ILogger<ContributionService> logger, IBackgroundJobClient backgroundJobClient)
         {
             _unitOfWorkRepo = unitOfWorkRepo;
             _mapper = MappingConfig.PcmsMapConfig().CreateMapper();
             _cacheService = cacheService;
             _ipcmsBackgroundService = ipcmsBackgroundService;
             _logger = logger;
+            _backgroundJobClient = backgroundJobClient;
         }
 
-        public async Task<ApiResponse<ContributionDto>> AddContribution(ContributionDto contributionDto)
+        public async Task<ApiResponse<ContributionDto>> AddContribution(AddContributionDto contributionDto)
         {
             var response = new ApiResponse<ContributionDto>();
             try
@@ -42,18 +44,22 @@ namespace pcms.Application.Services
                 var res = await _unitOfWorkRepo.CompleteAsync();
                 if (res > 0)
                 {
-                    var memberContribution = (await _unitOfWorkRepo.Contributions.GetContributions(contribution.ContributionDate, contributionDto.ContributionDate)).FirstOrDefault(m=>m.Amount == contribution.Amount && m.MemberId == contribution.MemberId);
-                    if (memberContribution != null)
-                    {
-                       string ValidateContributionJobId = BackgroundJob.Enqueue(() => _ipcmsBackgroundService.ValidateMemberContribution(memberContribution.ContributionId));
-                        
-                       string intrestCalcJobId = BackgroundJob.ContinueJobWith(ValidateContributionJobId, () => _ipcmsBackgroundService.UpdateMemberInterest(memberContribution.MemberId));
-                    }
-                    response.Data = _mapper.Map<ContributionDto>(memberContribution);
+
+                   // await _ipcmsBackgroundService.ValidateMemberContribution(contributionDto.MemberId);
+
+                   // await _ipcmsBackgroundService.UpdateMemberInterest(contributionDto.MemberId);
+
+                    string ValidateContributionJobId = _backgroundJobClient.Enqueue(() => _ipcmsBackgroundService.ValidateMemberContribution(contributionDto.MemberId));
+
+                    string intrestCalcJobId = _backgroundJobClient.ContinueJobWith(ValidateContributionJobId, () => _ipcmsBackgroundService.UpdateMemberInterest(contributionDto.MemberId));
+
+                    // response.Data = _mapper.Map<ContributionDto>(memberContribution);
                     response.ResponseMessage = "Success";
                     response.ResponseCode = "00";
+                    _logger.LogInformation($"Contribution details created successfully for MemberId: {contributionDto.MemberId}");
                     return response;
                 }
+                _logger.LogError($"failed to add new contribution for MemberId{contributionDto.MemberId}");
                 response.ResponseMessage = "failed to add new contribution. See logs for details";
                 response.ResponseCode = "01";
                 return response;
@@ -73,6 +79,7 @@ namespace pcms.Application.Services
                 var contributionJson = await _cacheService.GetDataAsync(contributionId);
                 if (!string.IsNullOrEmpty(contributionJson))
                 {
+                    _logger.LogInformation($"Retrieved contribution data from cache for ContributionId: {contributionId}");
                     contributionDto = JsonConvert.DeserializeObject<ContributionDto>(contributionJson);
                 }
                 else
@@ -86,11 +93,13 @@ namespace pcms.Application.Services
                     response.ResponseMessage = "Success";
                     response.ResponseCode = "00";
                     _cacheService.SetData(contributionId, JsonConvert.SerializeObject(contributionDto), 36000);
+                    _logger.LogInformation($"Retrieved contribution data successfully");
                 }
                 else
                 {
                     response.ResponseMessage = "failed to retreive Member details";
                     response.ResponseCode = "01";
+                    _logger.LogInformation($"Failed to retreive Member details");
                 }
 
                 return response;
@@ -99,6 +108,7 @@ namespace pcms.Application.Services
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Error occured while retrieving Member contributionId: {contributionId}. message: {ex.Message}");
                 throw;
             }
         }
@@ -108,27 +118,37 @@ namespace pcms.Application.Services
             var response = new ApiResponse<ContributionDto>();
             try
             {
-                var contribution = _mapper.Map<Contribution>(contributionDto);
-                 await _unitOfWorkRepo.Contributions.UpdateContribution(contribution);
+                var exists = await _unitOfWorkRepo.Contributions.GetContribution(contributionDto.ContributionId);
+                if (exists == null)
+                {
+                    response.ResponseMessage = "Not found";
+                    response.ResponseCode = "01";
+                }
+                
+                await _unitOfWorkRepo.Contributions.UpdateContribution(_mapper.Map<Contribution>(contributionDto));
                 var result = await _unitOfWorkRepo.CompleteAsync();
                 if (result > 0)
                 {
+                    string ValidateContributionJobId = _backgroundJobClient.Enqueue(() => _ipcmsBackgroundService.ValidateMemberContribution(contributionDto.ContributionId));
+                    string UpdateIntrestJobId = _backgroundJobClient.ContinueJobWith(ValidateContributionJobId, () => _ipcmsBackgroundService.ValidateMemberContribution(contributionDto.ContributionId));
+
                     response.ResponseMessage = "Success";
                     response.ResponseCode = "00";
+                    _logger.LogInformation($"Contribution details updated successfully for ContributionId: {contributionDto.ContributionId}");
                 }
                 else
                 {
-                    response.ResponseMessage = "failed to update contribution details";
+                    _logger.LogError($"Failed to update contribution details. see logs for details");
+                    response.ResponseMessage = "Failed to update contribution details. see logs for details";
                     response.ResponseCode = "01";
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogInformation($"Error message {ex.Message}");
+                _logger.LogError($"Error message {ex.Message}");
                 response.ResponseCode = "96";
                 response.ResponseMessage = "We experienced an internal server error";
             }
-
             return response;
         }
 
@@ -148,7 +168,37 @@ namespace pcms.Application.Services
                 }
                 else
                 {
-                    response.ResponseMessage = "failed to retreive Member details";
+                    response.ResponseMessage = "failed to retrieve Member details";
+                    response.ResponseCode = "01";
+                }
+
+                return response;
+
+
+            }
+            catch (Exception ex)
+            {
+                throw;
+            }
+        }
+
+        public async Task<ApiResponse<List<ContributionDto>>> GetMemberContributions(string MemberId)
+        {
+            try
+            {
+                var response = new ApiResponse<List<ContributionDto>>();
+
+                var result = await _unitOfWorkRepo.Contributions.GetMemberContributions(MemberId);
+
+                if (result != null)
+                {
+                    response.Data = _mapper.Map<List<ContributionDto>>(result);
+                    response.ResponseMessage = "Success";
+                    response.ResponseCode = "00";
+                }
+                else
+                {
+                    response.ResponseMessage = "Failed to retrieve Member details";
                     response.ResponseCode = "01";
                 }
 
