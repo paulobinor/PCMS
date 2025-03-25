@@ -8,9 +8,7 @@ namespace pcms.Domain.Interfaces
     {
         Task AddMember(Member member);
 
-        Task AddContributionAsync(Contribution contribution);
-
-        Task<string> RemoveMember(string memberId);
+        Task RemoveMember(string memberId);
         Task<List<Member>> GetAllMembers();
         Task UpdateMember(Member member);
         Task<Member> GetMember(string memberId);

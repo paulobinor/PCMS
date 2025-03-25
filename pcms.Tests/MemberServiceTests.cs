@@ -1,4 +1,6 @@
 using Moq;
+using pcms.Application.Dto;
+using pcms.Application.Interfaces;
 using pcms.Application.Services;
 using pcms.Domain.Entities;
 using pcms.Domain.Interfaces;
@@ -8,26 +10,30 @@ namespace pcms.Tests
 {
     public class MemberServiceTests
     {
-        private  Mock<IUnitOfWorkRepo> _unitOfWorkMock;
+        private Mock<IValidationService> _validationService;
+        private Mock<IUnitOfWorkRepo> _unitOfWorkMock;
+        private Mock<ICacheService>  _cacheServiceMock;
         private Mock<IMemberServiceRepo> _memberServiceRepo;
         private IMemberService _memberService;
         private Mock<IGenericRepository<Member>> _memberRepositoryMock;
-        private Mock<AppDBContext> _mockDbContext;
 
         public MemberServiceTests()
         {
+
+            _validationService = new Mock<IValidationService>();
+            _cacheServiceMock = new Mock<ICacheService>();
             _memberServiceRepo = new Mock<IMemberServiceRepo>();
             _unitOfWorkMock = new Mock<IUnitOfWorkRepo>();
             _memberRepositoryMock = new Mock<IGenericRepository<Member>>();
             _unitOfWorkMock.Setup(u => u.Members).Returns(_memberServiceRepo.Object);
-            _mockDbContext = new Mock<AppDBContext>();
-            _memberService = new MemberService(_unitOfWorkMock.Object, _mockDbContext.Object);
+           // _mockDbContext = new Mock<AppDBContext>();
+            _memberService = new MemberService(_unitOfWorkMock.Object, _validationService.Object, _cacheServiceMock.Object );
         }
 
         [Fact]
         public async Task RegisterMember_Should_Add_Member_And_Save()
         {
-            var memberDto = new Member
+            var memberDto = new MemberDto
             {
                 Name = "Test User",
                 Email = "test@example.com",

@@ -13,7 +13,8 @@ namespace pcms.Domain.Interfaces
         Task<ApiResponse<string>> DeleteMemberRecord(string memberId);
         Task<ApiResponse<string>> AddNewMember(MemberDto memberDto);
         Task<ApiResponse<string>> UpdateMember(MemberDto memberDto);
-        Task<ApiResponse<decimal>> GetTotalContributionsAsync(string memberId);
+       // Task<ApiResponse<decimal>> GetTotalContributionsAsync(string memberId);
+        Task<ApiResponse<MemberDto>> GetMember(string memberId);
     }
 
 }

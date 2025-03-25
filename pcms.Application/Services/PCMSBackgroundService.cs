@@ -7,10 +7,12 @@ namespace pcms.Application.Services
 {
     public class PCMSBackgroundService : IPCMSBackgroundService
     {
+        private readonly IMemberContributionService _memberContributionService;
         private readonly IUnitOfWorkRepo _unitOfWorkRepo;
-        public PCMSBackgroundService()
+        public PCMSBackgroundService(IMemberContributionService memberContributionService, IUnitOfWorkRepo unitOfWorkRepo)
         {
-
+            _memberContributionService = memberContributionService;
+            _unitOfWorkRepo = unitOfWorkRepo;
         }
         public async Task UpdateBenefitEligibility()
         {
@@ -56,6 +58,7 @@ namespace pcms.Application.Services
                     contribution.Remarks = "Invalid amount of 0";
                 }
             }
+            contribution.IsProcessed = true;
 
             await _unitOfWorkRepo.CompleteAsync();
         }
@@ -104,8 +107,8 @@ namespace pcms.Application.Services
                 var lastContributionDate = member.Contributions.Max(x => x.ContributionDate);
                 var LastContribution = member.Contributions.FirstOrDefault(m => m.ContributionDate.Date == lastContributionDate);
 
-                var total = await _unitOfWorkRepo.Contributions.GetTotalContributionsAsync(member.MemberId, member.RegistrationDate.Date, lastContributionDate.Date);
-                LastContribution.CumulativeContribution = total + LastContribution.Amount;
+                var total = await _memberContributionService.GetTotalContributionsAsync(member.MemberId);
+                LastContribution.CumulativeContribution = total.Data + LastContribution.Amount;
                 LastContribution.CumulativeIntrestAmount = LastContribution.CumulativeContribution * (10 / 100);
                 LastContribution.TotalCumulative = LastContribution.CumulativeContribution + LastContribution.CumulativeIntrestAmount;
                 await _unitOfWorkRepo.Contributions.UpdateContribution(LastContribution);

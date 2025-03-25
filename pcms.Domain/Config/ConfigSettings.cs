@@ -26,6 +26,15 @@ namespace pcms.Domain.Config
 
         public static ConnectionStrings ConnectionStrings => GetAppSettings().GetSection("ConnectionStrings").Get<ConnectionStrings>();
         public static AppSettings AppSettings => GetAppSettings().GetSection("AppSettings").Get<AppSettings>();
+        public static JWT Jwt => GetAppSettings().GetSection("JWT").Get<JWT>();
 
     }
+
+    public class JWT
+    {
+        public string Secret { get; set; }
+        public string ValidAudience { get; set; }
+        public string ValidIssuer { get; set; }
+    }
+
 }

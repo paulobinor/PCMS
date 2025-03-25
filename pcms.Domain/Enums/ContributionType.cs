@@ -11,4 +11,11 @@ namespace pcms.Domain.Enums
         Monthly,
         Voluntary
     }
+
+    public enum UserRoleTypes
+    {
+        Admin,
+        User,
+        HR
+    }
 }

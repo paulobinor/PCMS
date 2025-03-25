@@ -60,7 +60,12 @@ namespace pcms.Infra
         }
         public async Task UpdateContribution(Contribution lastContribution)
         {
-            await Update(lastContribution);
+             Update(lastContribution);
+        }
+
+        public async Task<List<Contribution>> GetContributions(DateTime startDate, DateTime endDate)
+        {
+            return (await GetAllAsync()).Where(m=>m.ContributionDate >= startDate && m.ContributionDate <= endDate).ToList();
         }
     }
 }

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.Logging;
 using pcms.Application.Interfaces;
+using pcms.Domain.Interfaces;
 
 namespace pcms.Application.Services
 {

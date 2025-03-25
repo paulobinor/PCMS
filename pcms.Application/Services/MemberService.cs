@@ -1,7 +1,9 @@
 ﻿using AutoMapper;
+using AutoMapper.Execution;
 using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Identity.Client;
+using Newtonsoft.Json;
 using pcms.Application.Dto;
 using pcms.Application.Interfaces;
 using pcms.Application.Validation;
@@ -17,17 +19,18 @@ namespace pcms.Application.Services
         private readonly IUnitOfWorkRepo _unitOfWorkRepo;
         private readonly IMapper _mapper;
         private IValidationService _validationService;
-        public MemberService(IUnitOfWorkRepo unitOfWorkRepo, IValidationService validationService)
+        private readonly ICacheService _cacheService;
+        public MemberService(IUnitOfWorkRepo unitOfWorkRepo, IValidationService validationService, ICacheService cacheService)
         {
             _unitOfWorkRepo = unitOfWorkRepo;
             _mapper = MappingConfig.PcmsMapConfig().CreateMapper();
             _validationService = validationService;
+            _cacheService = cacheService;
         }
-
 
         public async Task<ApiResponse<string>> DeleteMemberRecord(string memberId)
         {
-            var updateMember = await _unitOfWorkRepo.Members.RemoveMember(memberId);
+             await _unitOfWorkRepo.Members.RemoveMember(memberId);
             var result = await _unitOfWorkRepo.CompleteAsync();
             if (result > 0)
             {
@@ -43,7 +46,7 @@ namespace pcms.Application.Services
             {
                 return new ApiResponse<string> { Data = "", ResponseCode = "01", ResponseMessage = "Employer verification failed!" };
             }
-            var member = _mapper.Map<Member>(memberDto);
+            var member = _mapper.Map<Domain.Entities.Member>(memberDto);
              await _unitOfWorkRepo.Members.AddMember(member);
            var result = await _unitOfWorkRepo.CompleteAsync();
 
@@ -52,35 +55,71 @@ namespace pcms.Application.Services
 
         public async Task<ApiResponse<string>> UpdateMember(MemberDto memberDto)
         {
-            var member = _mapper.Map<Member>(memberDto);
+            var member = _mapper.Map<Domain.Entities.Member>(memberDto);
             var result =  await _unitOfWorkRepo.Members.UpdateMember(member).ContinueWith((n) => _unitOfWorkRepo.CompleteAsync());
+
+            _cacheService.SetData(memberDto.MemberId, JsonConvert.SerializeObject(memberDto), 36000);
             return result.Result > 0 ? new ApiResponse<string> { Data = "Success", ResponseCode = "00", ResponseMessage = "Record successfully deleted" } : new ApiResponse<string> { Data = "", ResponseCode = "01", ResponseMessage = "We could not execute the request!" };
         }
-        public async Task<ApiResponse<string>> GenerateStatement(string memberId, DateTime startDate, string DateTime)
-        {
-            var member = await _unitOfWorkRepo.Members.GetMemberWithContributions(memberId);
-            var totalContributionAmount = member.Contributions.Where(c => c.IsValid && c.IsProcessed).Sum(c => c.Amount);
-            var res = new ApiResponse<string>
-            {
-                Data = $"Statement for {member.Name}: Total Contributions = {totalContributionAmount:C}",
-                ResponseCode = "00",
-                ResponseMessage = "Success"
-            };
 
-            return res;
-        }
-        public async Task<decimal> GetTotalContributionsAsync(string memberId)
+        public async Task<ApiResponse<MemberDto>> GetMember(string memberId)
         {
-            var member = await _unitOfWorkRepo.Members.GetMemberWithContributions(memberId);
-            var totalContributionAmount = member.Contributions.Where(c => c.IsValid && c.IsProcessed).Sum(c => c.Amount);
-            var res = new ApiResponse<string>
+            var response = new ApiResponse<MemberDto>();
+            MemberDto? memberDto = default;
+            var memberJson = await _cacheService.GetDataAsync(memberId);
+            if (!string.IsNullOrEmpty(memberJson))
             {
-                Data = $"Statement for {member.Name}: Total Contributions = {totalContributionAmount:C}",
-                ResponseCode = "00",
-                ResponseMessage = "Success"
-            };
-
-            return res;
+                memberDto = JsonConvert.DeserializeObject<MemberDto>(memberJson);
+            }
+            else
+            {
+                var result = await _unitOfWorkRepo.Members.GetMember(memberId);
+                memberDto = _mapper.Map<MemberDto>(result);
+            }
+            if (memberDto != null)
+            {
+                response.Data = memberDto;
+                response.ResponseMessage = "Success";
+                response.ResponseCode = "00";
+                _cacheService.SetData(memberId, JsonConvert.SerializeObject(memberDto), 36000);
+            }
+            else
+            {
+                response.ResponseMessage = "failed to retreive Member details";
+                response.ResponseCode = "01";
+            }
+            return response;
         }
+
+        public async Task<ApiResponse<List<MemberDto>>> GetMembers(string memberId)
+        {
+            var response = new ApiResponse<List<MemberDto>>();
+            List<MemberDto>? membersDto = default;
+            var memberJson = await _cacheService.GetDataAsync(memberId);
+            if (!string.IsNullOrEmpty(memberJson))
+            {
+                membersDto = JsonConvert.DeserializeObject<List<MemberDto>>(memberJson);
+            }
+            else
+            {
+                var result = await _unitOfWorkRepo.Members.GetAllMembers();
+                membersDto = _mapper.Map<List<MemberDto>>(result);
+            }
+            if (membersDto != null)
+            {
+                response.Data = membersDto;
+                response.ResponseMessage = "Success";
+                response.ResponseCode = "00";
+                _cacheService.SetData(memberId, JsonConvert.SerializeObject(membersDto), 36000);
+            }
+            else
+            {
+                response.ResponseMessage = "failed to retreive Member details";
+                response.ResponseCode = "01";
+            }
+
+            return response;
+        }
+
     }
 }

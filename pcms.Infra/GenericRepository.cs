@@ -37,7 +37,18 @@ namespace pcms.Infra
           //      return false;
           //  }
         }
-        public void Update(T entity) => _dbSet.Update(entity);
+        public async Task Update(T entity)
+        {
+            try
+            {
+                _dbSet.Update(entity);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+        }
        
         public async Task<int> SaveChangesAsync() => await _context.SaveChangesAsync();
     }

@@ -35,7 +35,7 @@ namespace pcms.Infra
         {
             try
             {
-                await Update(member);
+                Update(member);
                 //if (member == null)
                 //{
                 //    //"log Not Found";

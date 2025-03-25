@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using pcms.Application;
 using pcms.Application.Dto;
 using pcms.Application.Validation;
 using pcms.Domain.Entities;
@@ -7,7 +8,7 @@ using pcms.Domain.Interfaces;
 namespace pcms.Api.Controllers
 {
     [ApiController]
-    [Route("api")]
+    [Route("api/Members")]
     public class MemberController : ControllerBase
     {
         
@@ -35,18 +36,36 @@ namespace pcms.Api.Controllers
             return Ok(await _memberService.AddNewMember(memberDto));
         }
 
-        [HttpPost]
-        [Route("AddContribution")]
-        public async Task<IActionResult> AddContribution([FromBody] ContributionDto contributionDto)
+        [HttpGet]
+        [Route("Get/{Id}")]
+        public async Task<IActionResult> GetMember(string Id)
         {
-            var validationResult = _validationService.Validate(contributionDto);
-            if (!validationResult.IsValid)
+            //var validationResult = _validationService.Validate(Id);
+            //if (!validationResult.IsValid)
+            //{
+            //    return ValidationProblem(validationResult.customProblemDetail.Detail);
+            //}
+            if (string.IsNullOrEmpty(Id))
             {
-                return BadRequest(validationResult.customProblemDetail.Detail);
+                return BadRequest(new ApiResponse<string> { ResponseCode = "01", ResponseMessage = "Invalid Id provided" });
             }
-            return Ok(await _memberService.AddContribution(contributionDto));
+            return Ok(await _memberService.GetMember(Id));
         }
 
-      
+        [HttpPost]
+        [Route("Remove")]
+        public async Task<IActionResult> RemoveMember([FromBody] string MemberId)
+        {
+            //var validationResult = _validationService.Validate(Id);
+            //if (!validationResult.IsValid)
+            //{
+            //    return ValidationProblem(validationResult.customProblemDetail.Detail);
+            //}
+            if (string.IsNullOrEmpty(MemberId))
+            {
+                return BadRequest(new ApiResponse<string> { ResponseCode = "01", ResponseMessage = "Invalid Id provided" });
+            }
+            return Ok(await _memberService.DeleteMemberRecord(MemberId));
+        }
     }
 }
