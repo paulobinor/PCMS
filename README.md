@@ -102,12 +102,12 @@ Create users to manage/access the endpoints provided: https://localhost:7228/api
 | Endpoint                                            | Method | Description                            |
 |-----------------------------------------------------|--------|----------------------------------------|
 | `/api/contributions/Add`                            | `POST` | Add a new contribution                 |
-| `/api/contributions/Update`                         | `PUT`  | Update contribution details          | 
+| `/api/contributions/Update`                         | `PUT`  | Update contribution details            | 
 | `/api/contributions/{id}`                           | `GET`  | Retrieve contribution details          | 
 | `/api/contributions/Member/{memberId}`              | `GET`  | Get member a contributions             |
 | `/api/contributions/list`                           | `GET`  | Get all contributions for all members  |
 | `/api/contributions/total/{memberId}`               | `GET`  | Get total member contribution          |
-| `/api/contributions/statement/{memberId}/Statement` | `GET`  | Generate a contribution statement      |
+| `/api/contributions/statement/{memberId}`           | `GET`  | Generate a contribution statement      |
 
 ### 🔹 Background Jobs & Hangfire
 | Endpoint                              | Method | Description                  |
