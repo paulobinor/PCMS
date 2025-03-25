@@ -67,7 +67,7 @@ This will start the API on **http://localhost:5258** (or **https://localhost:722
 ### 5️⃣ Run Hangfire Dashboard
 Hangfire dashboard is available at:
 ```
-http://localhost:5000/hangfire
+https://localhost:7228/hangfire
 ```
 You can monitor and manage background jobs from here.
 
