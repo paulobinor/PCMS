@@ -81,7 +81,7 @@ Create users to manage/access the endpoints provided: https://localhost:7228/api
   "userRole": "Admin"
 }
 ```
-
+Roles available : Admin, User, HR
 ## API Endpoints
 ### 🔹 Auth Management
 | Endpoint                 | Method   | Description                    |
