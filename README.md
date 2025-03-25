@@ -62,7 +62,7 @@ Start the application using:
 ```
 dotnet run
 ```
-This will start the API on **http://localhost:5000** (or **https://localhost:5001** for HTTPS).
+This will start the API on **http://localhost:5258** (or **https://localhost:7228** for HTTPS).
 
 ### 5️⃣ Run Hangfire Dashboard
 Hangfire dashboard is available at:
@@ -71,21 +71,42 @@ http://localhost:5000/hangfire
 ```
 You can monitor and manage background jobs from here.
 
+### Create Users  Database
+Create users to manage/access the endpoints provided: https://localhost:7228/api/Register
+```json
+{
+  "userName": "admin",
+  "password": "!Password@1!",
+  "email": "admin@nlpc.com",
+  "userRole": "Admin"
+}
+```
+
 ## API Endpoints
-### 🔹 Member Management
+### 🔹 Auth Management
 | Endpoint                 | Method   | Description                    |
 |--------------------------|----------|--------------------------------|
-| `/api/members`           | `POST`   | Register a new member          |
-| `/api/members/{id}`      | `GET`    | Retrieve member details        |
-| `/api/members/{id}`      | `PUT`    | Update member details          |
-| `/api/members/{id}`      | `DELETE` | Soft-delete a member           |
+| `/api/register`          | `POST`   | Register a new App User        |
+| `/api/Login `            | `GET`    | authorized user Login          |
+
+
+### 🔹 Member Management
+| Endpoint                              | Method   | Description                    |
+|---------------------------------------|----------|--------------------------------|
+| `/api/members/addnewmember`           | `POST`   | Register a new member          |
+| `/api/members/Get/{id}`               | `GET`    | Retrieve member details        |
+| `/api/members/Update/{id}`            | `PUT`    | Update member details          |
+| `/api/members/Remove{id}`             | `POST`   | Soft-delete a member           |
 
 ### 🔹 Contribution Management
-| Endpoint                                  | Method | Description                            |
-|-------------------------------------------|--------|----------------------------------------|
-| `/api/contributions`                      | `POST` | Add a new contribution                 |
-| `/api/contributions/{id}`                 | `GET`  | Retrieve contribution details          | 
-| `/api/contributions/statement/{memberId}` | `GET`  | Generate a contribution statement      |
+| Endpoint                                            | Method | Description                            |
+|-----------------------------------------------------|--------|----------------------------------------|
+| `/api/contributions/Add`                            | `POST` | Add a new contribution                 |
+| `/api/contributions/{id}`                           | `GET`  | Retrieve contribution details          | 
+| `/api/contributions/Member/{memberId}`              | `GET`  | Get member a contributions             |
+| `/api/contributions/list`                           | `GET`  | Get all contributions for all members  |
+| `/api/contributions/reports/{memberId}`             | `GET`  | Get total member contribution          |
+| `/api/contributions/statement/{memberId}/Statement` | `GET`  | Generate a contribution statement      |
 
 ### 🔹 Background Jobs & Hangfire
 | Endpoint                | Method | Description                  |
