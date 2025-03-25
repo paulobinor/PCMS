@@ -114,8 +114,8 @@ Create users to manage/access the endpoints provided: https://localhost:7228/api
 |-------------------------------------- |--------|------------------------------|
 | `/hangfire`                           | `GET`  | Access Hangfire dashboard    |
 | `/api/jobs/retryFailed`               | `POST` | Retry failed background jobs |
-| `/api/jobs/{MemberId}/UpdateInterest` | `POST` | Retry failed background jobs |
-| `/api/jobs/{ContributionId}/validate` | `POST` | Retry failed background jobs |
+| `/api/jobs/{MemberId}/UpdateInterest` | `POST` | Update member interest       |
+| `/api/jobs/{ContributionId}/validate` | `POST` | validate member contribution |
 
 ## Unit Testing
 Run the unit tests using:
