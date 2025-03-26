@@ -139,7 +139,7 @@ namespace pcms.Application.Services
                 if (result > 0)
                 {
                     string ValidateContributionJobId = _backgroundJobClient.Enqueue(() => _ipcmsBackgroundService.ValidateContribution(contributionDto.ContributionId));
-                    string UpdateIntrestJobId = _backgroundJobClient.ContinueJobWith(ValidateContributionJobId, () => _ipcmsBackgroundService.UpdateMemberInterest(contributionDto.ContributionId));
+                    string UpdateIntrestJobId = _backgroundJobClient.ContinueJobWith(ValidateContributionJobId, () => _ipcmsBackgroundService.UpdateMemberInterest(UpdateContribution.MemberId));
 
                     response.ResponseMessage = "Success";
                     response.ResponseCode = "00";
