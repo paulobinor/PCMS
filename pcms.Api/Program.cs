@@ -16,9 +16,17 @@ using pcms.Application.Validation;
 using pcms.Domain.Entities;
 using pcms.Domain.Interfaces;
 using pcms.Infra;
+using Serilog;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
+
+var logger = new LoggerConfiguration().WriteTo.Console()
+  .ReadFrom.Configuration(builder.Configuration)
+  .Enrich.FromLogContext()
+  .CreateLogger();
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog(logger);
 
 // Add services to the container.
 
