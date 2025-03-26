@@ -175,17 +175,20 @@ namespace pcms.Application.Services
             try
             {
                 var LastContribution = (await _unitOfWorkRepo.Contributions.GetMemberContributions(memberId)).OrderByDescending(m => m.EntryNumber).FirstOrDefault();
-                if (LastContribution.IsValid) 
+                if (LastContribution != null)
                 {
-                    var total = await _memberContributionService.GetTotalContributionsAsync(memberId);
-                    LastContribution.CumulativeContribution = total.Data + LastContribution.Amount;
-                    LastContribution.CumulativeIntrestAmount = (LastContribution.CumulativeContribution * 10) / 100;
-                    LastContribution.TotalCumulative = LastContribution.CumulativeContribution + LastContribution.CumulativeIntrestAmount;
-                    LastContribution.status = "Interest Processed";
-                    LastContribution.IsProcessed = true;
-                    await _unitOfWorkRepo.Contributions.UpdateContribution(LastContribution);
-                    await _unitOfWorkRepo.CompleteAsync();
-                    _logger.LogError($"Interest with memberId: {memberId} updated successfully");
+                    if (LastContribution.IsValid)
+                    {
+                        var total = await _memberContributionService.GetTotalContributionsAsync(memberId);
+                        LastContribution.CumulativeContribution = total.Data + LastContribution.Amount;
+                        LastContribution.CumulativeIntrestAmount = (LastContribution.CumulativeContribution * 10) / 100;
+                        LastContribution.TotalCumulative = LastContribution.CumulativeContribution + LastContribution.CumulativeIntrestAmount;
+                        LastContribution.status = "Interest Processed";
+                        LastContribution.IsProcessed = true;
+                        await _unitOfWorkRepo.Contributions.UpdateContribution(LastContribution);
+                        await _unitOfWorkRepo.CompleteAsync();
+                        _logger.LogError($"Interest with memberId: {memberId} updated successfully");
+                    }
                 }
             }
             catch (Exception)

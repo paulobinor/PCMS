@@ -50,6 +50,7 @@ namespace pcms.Infra
                 var member = await GetByIdAsync(memberId);
                
                 member.IsDeleted = true;
+                member.IsActive = false;
                 Update(member);
                 //return "Success";
             }

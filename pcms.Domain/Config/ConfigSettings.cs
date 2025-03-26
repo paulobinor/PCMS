@@ -15,7 +15,6 @@ namespace pcms.Domain.Config
 
         static private IConfigurationRoot GetAppSettings()
         {
-
             var builder = new ConfigurationBuilder().SetBasePath(ApplicationExeDirectory()).AddJsonFile("appsettings.json");
             if (_ConfigRoot == null)
             {
@@ -27,7 +26,7 @@ namespace pcms.Domain.Config
         public static ConnectionStrings ConnectionStrings => GetAppSettings().GetSection("ConnectionStrings").Get<ConnectionStrings>();
         public static AppSettings AppSettings => GetAppSettings().GetSection("AppSettings").Get<AppSettings>();
         public static JWT Jwt => GetAppSettings().GetSection("JWT").Get<JWT>();
-
+        public static HangFireOptions HangFireOptions => GetAppSettings().GetSection("HangFireOptions").Get<HangFireOptions>();
     }
 
     public class JWT

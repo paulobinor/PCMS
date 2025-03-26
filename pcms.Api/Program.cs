@@ -13,6 +13,7 @@ using pcms.Application.Dto;
 using pcms.Application.Interfaces;
 using pcms.Application.Services;
 using pcms.Application.Validation;
+using pcms.Domain.Config;
 using pcms.Domain.Entities;
 using pcms.Domain.Interfaces;
 using pcms.Infra;
@@ -111,9 +112,9 @@ builder.Services.AddAuthentication(options =>
     {
         ValidateIssuer = true,
         ValidateAudience = true,
-        ValidAudience = builder.Configuration["JWT:ValidAudience"],
-        ValidIssuer = builder.Configuration["JWT:ValidIssuer"],
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:Secret"]))
+        ValidAudience = ConfigSettings.Jwt.ValidAudience, 
+        ValidIssuer = ConfigSettings.Jwt.ValidIssuer,    
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(ConfigSettings.Jwt.Secret))
     };
 
 });
@@ -154,8 +155,8 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
     {
         new HangfireCustomBasicAuthenticationFilter
         {
-            User = app.Configuration.GetSection("HangFireOptions:User").Value,
-            Pass = app.Configuration.GetSection("HangFireOptions:Pass").Value
+            User = ConfigSettings.HangFireOptions.User,
+            Pass = ConfigSettings.HangFireOptions.Pass
         }
     }
 });
