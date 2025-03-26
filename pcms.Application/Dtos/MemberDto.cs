@@ -15,10 +15,10 @@ namespace pcms.Application.Dto
         public string? Phone { get; set; }
         public DateTime DateOfBirth { get; set; }
         public bool IsActive { get; set; } = true;
-        public bool IsDeleted { get; set; } = false;
-        public bool IsLegibleforBenefit { get; set; } = false;
+        public bool IsDeleted { get; set; }  
+        public bool IsLegibleforBenefit { get; set; }
         public string RSAPin { get; set; }
-        public DateTime? RegistrationDate { get; set; }
+        public DateTime RegistrationDate { get; set; }
         public string Employer { get;  set; }
     }
 

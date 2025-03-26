@@ -61,8 +61,28 @@ namespace pcms.Application.Services
 
         public async Task<ApiResponse<string>> UpdateMember(MemberDto memberDto)
         {
-            var member = _mapper.Map<Domain.Entities.Member>(memberDto);
-            var result =  await _unitOfWorkRepo.Members.UpdateMember(member).ContinueWith((n) => _unitOfWorkRepo.CompleteAsync());
+            var response = new ApiResponse<string>();
+
+            var updateMember = await _unitOfWorkRepo.Members.GetMember(memberDto.MemberId);
+            if (updateMember == null)
+            {
+                response.ResponseMessage = "Member not found or does not exist";
+                response.ResponseCode = "01";
+                return response;
+            }
+            updateMember.Employer = memberDto.Employer;
+            updateMember.RSAPin = memberDto.RSAPin;
+            updateMember.Email = memberDto.Email;
+            updateMember.DateOfBirth = memberDto.DateOfBirth;
+            updateMember.Phone = memberDto.Phone;
+            updateMember.IsActive = memberDto.IsActive;   
+            updateMember.Name = memberDto.Name;
+            updateMember.IsEligibleForBenefit = memberDto.IsLegibleforBenefit;
+            updateMember.RegistrationDate = memberDto.RegistrationDate;
+
+            //var member = _mapper.Map<Domain.Entities.Member>(memberDto);
+
+            var result =  await _unitOfWorkRepo.Members.UpdateMember(updateMember).ContinueWith((n) => _unitOfWorkRepo.CompleteAsync());
 
             _cacheService.SetData(memberDto.MemberId, JsonConvert.SerializeObject(memberDto), 36000);
             if (result.Result > 0)

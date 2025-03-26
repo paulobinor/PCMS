@@ -49,9 +49,9 @@ namespace pcms.Application.Services
 
                    // await _ipcmsBackgroundService.UpdateMemberInterest(contributionDto.MemberId);
 
-                    string ValidateContributionJobId = _backgroundJobClient.Enqueue(() => _ipcmsBackgroundService.ValidateLastMemberContribution(contributionDto.MemberId));
+                    string ValidateContributionJobId = _backgroundJobClient.Enqueue(() => _ipcmsBackgroundService.ValidateContribution(contribution.ContributionId));
 
-                    string intrestCalcJobId = _backgroundJobClient.ContinueJobWith(ValidateContributionJobId, () => _ipcmsBackgroundService.UpdateMemberInterest(contributionDto.MemberId));
+                    //string intrestCalcJobId = _backgroundJobClient.ContinueJobWith(ValidateContributionJobId, () => _ipcmsBackgroundService.UpdateLastContributionInterest(contributionDto.MemberId));
 
                     // response.Data = _mapper.Map<ContributionDto>(memberContribution);
                     response.ResponseMessage = "Success";
@@ -139,7 +139,7 @@ namespace pcms.Application.Services
                 if (result > 0)
                 {
                     string ValidateContributionJobId = _backgroundJobClient.Enqueue(() => _ipcmsBackgroundService.ValidateContribution(contributionDto.ContributionId));
-                    string UpdateIntrestJobId = _backgroundJobClient.ContinueJobWith(ValidateContributionJobId, () => _ipcmsBackgroundService.UpdateMemberInterest(UpdateContribution.MemberId));
+                  //  string UpdateIntrestJobId = _backgroundJobClient.ContinueJobWith(ValidateContributionJobId, () => _ipcmsBackgroundService.UpdateLastContributionInterest(UpdateContribution.MemberId));
 
                     response.ResponseMessage = "Success";
                     response.ResponseCode = "00";

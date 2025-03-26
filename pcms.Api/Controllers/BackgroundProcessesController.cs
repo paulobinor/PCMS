@@ -42,14 +42,36 @@ namespace pcms.Api.Controllers
             //{
             //    return ValidationProblem(validationResult.customProblemDetail.Detail);
             //}
-            var member = await _memberService.GetMember(MemberId);
-            if (member.ResponseCode == "00")
+            var response = await _memberService.GetMember(MemberId);
+            if (response.ResponseCode == "00")
             {
-                await _pCMSBackgroundService.UpdateMemberInterest(MemberId);
+                List<MemberDto> members = [response.Data];
+                await _pCMSBackgroundService.CalculateContributionInterest(members);
                 return Ok();
             }
-            return BadRequest(new {member.ResponseMessage, member.ResponseCode});
+            return BadRequest(response);
         }
+
+        //[HttpPost]
+        //[Route("Jobs/{ContributionId}/UpdateInterest")]
+        //public async Task<IActionResult> UpdateContributionInterest(string ContributionId)
+        //{
+        //    _logger.LogInformation($"Received request to Update member interest. ContributionId: {ContributionId}");
+
+        //    //var validationResult = _validationService.Validate(memberDto);
+        //    //if (!validationResult.IsValid)
+        //    //{
+        //    //    return ValidationProblem(validationResult.customProblemDetail.Detail);
+        //    //}
+
+        //    await _pCMSBackgroundService.UpdateMemberInterest(ContributionId);
+        //    //var member = await _memberService.GetMember(MemberId);
+        //    if (ContributionId == null)
+        //    {
+        //        return BadRequest(new { ResponseMessage = "Invalid Id provided", ResponseCode = "01" });
+        //    }
+        //    return Ok(new { ResponseMessage = "Success", ResponseCode = "00" });
+        //}
 
         [HttpGet]
         [Route("Jobs/{ContributionId}/Validate")]
@@ -61,13 +83,13 @@ namespace pcms.Api.Controllers
             //{
             //    return ValidationProblem(validationResult.customProblemDetail.Detail);
             //}
-            var member = await _contributionService.GetContribution(ContributionId);
-            if (member.ResponseCode == "00")
+            var contribution = await _contributionService.GetContribution(ContributionId);
+            if (contribution.ResponseCode == "00")
             {
                 var response = await _pCMSBackgroundService.ValidateContribution(ContributionId);
                 return Ok(response);
             }
-            return BadRequest(new { member.ResponseMessage, member.ResponseCode });
+            return BadRequest(new { contribution.ResponseMessage, contribution.ResponseCode });
         }
     }
 }

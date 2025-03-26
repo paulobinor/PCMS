@@ -1,12 +1,14 @@
-﻿namespace pcms.Application.Interfaces
+﻿using pcms.Application.Dto;
+using pcms.Domain.Entities;
+
+namespace pcms.Application.Interfaces
 {
     public interface IPCMSBackgroundService
     {
-        Task UpdateBenefitEligibility();
-        Task UpdateMemberInterest(string memberId);
-        Task ValidateLastMemberContribution(string memberId);
+        Task UpdateBenefitEligibility(List<Member> members);
+       // Task ValidateLastMemberContribution(string memberId);
         Task ValidateMemberContributions();
-        Task UpdateAllMemberInterest();
         Task<ApiResponse<string>> ValidateContribution(string contributionId);
+        Task CalculateContributionInterest(List<MemberDto> members);
     }
 }

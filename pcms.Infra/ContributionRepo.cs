@@ -59,9 +59,17 @@ namespace pcms.Infra
         {
             return await GetByIdAsync(contributionId);
         }
-        public async Task UpdateContribution(Contribution lastContribution)
+        public async Task UpdateContribution(Contribution contribution)
         {
-             Update(lastContribution);
+            try
+            {
+                Update(contribution);
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
         }
 
         public async Task<List<Contribution>> GetContributions(DateTime startDate, DateTime endDate)

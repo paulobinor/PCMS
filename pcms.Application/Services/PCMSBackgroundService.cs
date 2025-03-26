@@ -23,36 +23,50 @@ namespace pcms.Application.Services
             _logger = logger;
             _cacheService = cacheService;
         }
-        public async Task UpdateBenefitEligibility()
+        public async Task UpdateBenefitEligibility(List<pcms.Domain.Entities.Member> members)
         {
             _logger.LogInformation("About to compute benefit elegibility");
-            var list = (await _unitOfWorkRepo.Members.GetAllMembers()).Where(m=>m.IsActive);
+          //  var list = (await _unitOfWorkRepo.Members.GetAllMembers()).Where(m=>m.IsActive);
 
-            _logger.LogInformation($"About to Process {list.Count()} records");
+            _logger.LogInformation($"About to Process {members.Count()} records");
             int legible = 0;
             int Notlegible = 0;
-            foreach (var member in list)
+            foreach (var member in members)
             {
-                var lastContributionDate = member.Contributions.Max(x => x.ContributionDate);
-                if (lastContributionDate != null)
+                var updateMember = await _unitOfWorkRepo.Members.GetMember(member.MemberId);
+                if (updateMember != null)
                 {
-                    if ((lastContributionDate.Month - member.RegistrationDate.Month) >= 6)
+                    var lastContributionDate = updateMember.Contributions.Max(x => x.ContributionDate);
+                    if (lastContributionDate != null)
                     {
-                        legible++;
-                        member.IsEligibleForBenefit = true;
-                        _unitOfWorkRepo.Members.UpdateMember(member);
+                        if ((lastContributionDate.Month - member.RegistrationDate.Month) >= 6)
+                        {
+                            legible++;
+                            updateMember.IsEligibleForBenefit = true;
+                            _unitOfWorkRepo.Members.UpdateMember(updateMember);
+                        }
+                        Notlegible++;
                     }
-                    Notlegible++;
+                    _cacheService.SetData(member.MemberId, JsonConvert.SerializeObject(updateMember), 3600);
                 }
-                _cacheService.SetData(member.MemberId, JsonConvert.SerializeObject(member), 36000);
+               
             }
             await _unitOfWorkRepo.CompleteAsync();
-            _logger.LogInformation($"{list.Count()} records successfully processed with {legible} legible for benefits, while {Notlegible} not legible for benefits");
+            _logger.LogInformation($"{members.Count()} records successfully processed with {legible} legible for benefits, while {Notlegible} not legible for benefits");
         }
 
         public async Task<ApiResponse<string>> ValidateContribution(string contributionId)
         {
+            _logger.LogError($"About to validate contribution. ContributionId: {contributionId}");
             var response = new ApiResponse<string>();
+
+            if (contributionId == null)
+            {
+                _logger.LogError("Invalid contributionId specified or null value provided");
+                response.ResponseMessage = "Invalid contributionId specified or null value provided";
+                response.ResponseCode = "01";
+                return response;
+            }
             var contribution = await _unitOfWorkRepo.Contributions.GetContribution(contributionId);
             bool IsValidTransaction = true;
             var member = await _unitOfWorkRepo.Members.GetMember(contribution.MemberId);
@@ -96,58 +110,27 @@ namespace pcms.Application.Services
             _cacheService.SetData(member.MemberId, JsonConvert.SerializeObject(member), 3600);
             return response;
         }
-        public async Task ValidateLastMemberContribution(string memberId)
-        {
-            _logger.LogError($"Received request to validate member contribution with memberId: {memberId}");
-            var lastContribution = (await _unitOfWorkRepo.Contributions.GetMemberContributions(memberId)).OrderByDescending(m => m.EntryNumber).FirstOrDefault();
 
-            var contribution = await _unitOfWorkRepo.Contributions.GetContribution(lastContribution.ContributionId);
-            bool IsValidTransaction = true;
-            var member = await _unitOfWorkRepo.Members.GetMember(contribution.MemberId);
-            int currentMonth = DateTime.Now.Month; // Get the current month
 
-            var duplicate = member.Contributions
-                    .Where(c => c.YearForContribution == contribution.YearForContribution && c.MonthForContribution == contribution.MonthForContribution && c.Type == ContributionType.Monthly);
-            if (duplicate.Count() > 1)
-            {
-                _logger.LogError($"Duplicate contribution for ContributionId: {lastContribution.ContributionId}");
-                contribution.IsValid = false;
-                contribution.Remarks = "Duplicate contribution";
-                IsValidTransaction = false;
-            }
-
-            if (IsValidTransaction)
-            {
-                if (contribution.Amount <= 0)
-                {
-                    _logger.LogError($"invalid amount provided for contributionId:{lastContribution.ContributionId}");
-                    IsValidTransaction = false;
-                    contribution.IsValid = false;
-                    contribution.Remarks = "Invalid amount of 0";
-                }
-                else
-                {
-                    _logger.LogInformation($"validation successful for ContributionId: {lastContribution.ContributionId}");
-                    contribution.Remarks = "Approved";
-                }
-            }
-
-            await _unitOfWorkRepo.CompleteAsync();
-            _cacheService.SetData(member.MemberId, JsonConvert.SerializeObject(member), 3600);
-        }
         public async Task ValidateMemberContributions()
         {
+            _logger.LogInformation("About to validate member contributions");
             var list = await _unitOfWorkRepo.Members.GetAllMembers();
             int currentMonth = DateTime.Now.Month;
+            _logger.LogInformation($"Will process {list.Count} member records");
             foreach (var member in list)
             {
+                _logger.LogInformation($"Now processing records for {member.Name}");
                 var duplicates = member.Contributions
                      .Where(c => c.YearForContribution == DateTime.Now.Year)
                      .GroupBy(c => c.MonthForContribution)
                      .Where(g => g.Count() > 1)
                      .Select(g => g.Key) 
                      .ToList();
-
+                if (duplicates != null)
+                {
+                    _logger.LogInformation($"There are currently {duplicates.Count} duplicate contributions for {member.Name}");
+                }
 
                 HashSet<int> contributedMonths =
                     new HashSet<int>(member.Contributions
@@ -157,10 +140,12 @@ namespace pcms.Application.Services
                 List<int> missingMonths = new List<int>();
 
 
+                _logger.LogInformation($"Now checking for missing monthly contributions for {member.Name}");
                 for (int month = 1; month <= currentMonth; month++)
                 {
                     if (!contributedMonths.Contains(month))
                     {
+                        _logger.LogError($"Contribution for month {month} of year {DateTime.Now.Year} is missing for {member.Name}");
                         missingMonths.Add(month);
                     }
                 }
@@ -168,71 +153,78 @@ namespace pcms.Application.Services
             }
             await _unitOfWorkRepo.CompleteAsync();
         }
-
-        public async Task UpdateMemberInterest(string memberId)
+        public async Task CalculateContributionInterest(List<MemberDto> members)
         {
-            _logger.LogInformation($"Received request to update member interest with memberId: {memberId}");
+            _logger.LogInformation($"Received request to calculate member interest");
             try
             {
-                var LastContribution = (await _unitOfWorkRepo.Contributions.GetMemberContributions(memberId)).OrderByDescending(m => m.EntryNumber).FirstOrDefault();
-                if (LastContribution != null)
+                //var members = (await _unitOfWorkRepo.Members.GetAllMembers()).Where(m=>m.IsActive).ToList();
+
+                //  int ProcessedCount = 0;
+                //  int UnProcessed = 0;
+                _logger.LogInformation($"Will process {members.Count} member records");
+                foreach (var member in members)
                 {
-                    if (LastContribution.IsValid)
+                    _logger.LogInformation($"Now processing {member.Name} interest");
+                    var ContributionList = (await _unitOfWorkRepo.Contributions.GetMemberContributions(member.MemberId)).Where(v => v.IsValid).OrderBy(m => m.EntryNumber);
+
+                    if (ContributionList != null)
                     {
-                        var total = await _memberContributionService.GetTotalContributionsAsync(memberId);
-                        LastContribution.CumulativeContribution = total.Data + LastContribution.Amount;
-                        LastContribution.CumulativeIntrestAmount = (LastContribution.CumulativeContribution * 10) / 100;
-                        LastContribution.TotalCumulative = LastContribution.CumulativeContribution + LastContribution.CumulativeIntrestAmount;
-                        LastContribution.status = "Interest Processed";
-                        LastContribution.IsProcessed = true;
-                        await _unitOfWorkRepo.Contributions.UpdateContribution(LastContribution);
-                        await _unitOfWorkRepo.CompleteAsync();
-                        _logger.LogError($"Interest with memberId: {memberId} updated successfully");
+                        decimal total = 0; // ContributionList.Sum(m => m.Amount);
+                        foreach (var contribution in ContributionList)
+                        {
+                            total += contribution.Amount;
+                            contribution.CumulativeContribution = total;
+                            contribution.CumulativeIntrestAmount = (contribution.CumulativeContribution * 10) / 100;
+                            contribution.TotalCumulative = contribution.CumulativeContribution + contribution.CumulativeIntrestAmount;
+                            contribution.IsProcessed = true;
+                            await _unitOfWorkRepo.Contributions.UpdateContribution(contribution);
+                            _logger.LogInformation($"ContributionId: {contribution.ContributionId} for {member.Name} processed successfully");
+                        }
+                    }
+                    else
+                    {
+                        _logger.LogInformation($"No contribution records for {member.Name} or records not found");
                     }
                 }
+                await _unitOfWorkRepo.CompleteAsync();
             }
             catch (Exception)
             {
-                _logger.LogError($"We encountered an error while updating member interest for MemberId: {memberId}.");
                 throw;
             }
         }
 
-
-        public async Task UpdateAllMemberInterest()
+        public async Task CalculateContributionInterest(string memberId)
         {
-            _logger.LogInformation($"Received request to update all member interest");
+            _logger.LogInformation($"Received request to calculate member interest");
             try
             {
-                var members = (await _unitOfWorkRepo.Members.GetAllMembers()).Where(m=>m.IsActive).ToList();
+                //var members = (await _unitOfWorkRepo.Members.GetAllMembers()).Where(m=>m.IsActive).ToList();
 
-                int ProcessedCount = 0;
-                int UnProcessed = 0;
-                _logger.LogInformation($"Will process {members.Count} member records");
-                foreach (var member in members) 
+                //  int ProcessedCount = 0;
+                //  int UnProcessed = 0;
+                var ContributionList = (await _unitOfWorkRepo.Contributions.GetMemberContributions(memberId)).Where(v => v.IsValid).OrderBy(m => m.EntryNumber);
+
+                if (ContributionList != null)
                 {
-
-                    _logger.LogInformation($"Now processing {member.Name} record");
-                    var LastContribution = (await _unitOfWorkRepo.Contributions.GetMemberContributions(member.MemberId)).Where(v=>v.IsValid).OrderByDescending(m => m.EntryNumber).FirstOrDefault();
-                    if (LastContribution.IsValid && !LastContribution.IsProcessed)
+                    decimal total = 0; // ContributionList.Sum(m => m.Amount);
+                    foreach (var contribution in ContributionList)
                     {
-                        var total = await _memberContributionService.GetTotalContributionsAsync(member.MemberId);
-                        LastContribution.CumulativeContribution = total.Data + LastContribution.Amount;
-                        LastContribution.CumulativeIntrestAmount = (LastContribution.CumulativeContribution * 10) / 100;
-                        LastContribution.TotalCumulative = LastContribution.CumulativeContribution + LastContribution.CumulativeIntrestAmount;
-                        LastContribution.IsProcessed = true;
-                        await _unitOfWorkRepo.Contributions.UpdateContribution(LastContribution);
-                        ProcessedCount++;
-                        _logger.LogInformation($"ContributionId: {LastContribution.ContributionId} for {member.Name} processed successfully");
-                    }
-                    else
-                    {
-                        UnProcessed++;
-                        _logger.LogInformation($"ContributionId: {LastContribution.ContributionId} for {member.Name} not valid for processing. Reason: {LastContribution.Remarks}");
+                        total += contribution.Amount;
+                        contribution.CumulativeContribution = total;
+                        contribution.CumulativeIntrestAmount = (contribution.CumulativeContribution * 10) / 100;
+                        contribution.TotalCumulative = contribution.CumulativeContribution + contribution.CumulativeIntrestAmount;
+                        contribution.IsProcessed = true;
+                        await _unitOfWorkRepo.Contributions.UpdateContribution(contribution);
+                        _logger.LogInformation($"ContributionId: {contribution.ContributionId} for memberId : {memberId} processed successfully");
                     }
                 }
+                else
+                {
+                    _logger.LogInformation($"No contribution records for memberId: {memberId} or records not found");
+                }
                 await _unitOfWorkRepo.CompleteAsync();
-                _logger.LogInformation($"{members.Count()} records successfully processed with: {ProcessedCount} legible for benefits, while {UnProcessed} not legible for benefits");
             }
             catch (Exception)
             {

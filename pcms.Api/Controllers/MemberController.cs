@@ -1,6 +1,7 @@
 using Azure.Core;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using pcms.Application;
 using pcms.Application.Dto;
 using pcms.Application.Validation;
@@ -31,7 +32,7 @@ namespace pcms.Api.Controllers
         [Route("Add")]
         public async Task<IActionResult> AddNewMember([FromBody] AddMemberDto memberDto)
         {
-            _logger.LogInformation("Received request to add new member");
+            _logger.LogInformation($"Received request to add new member. Payload - {JsonConvert.SerializeObject(new { memberDto })}");
             var validationResult = _validationService.Validate(memberDto);
             if (!validationResult.IsValid)
             {
@@ -45,7 +46,7 @@ namespace pcms.Api.Controllers
         [Route("Get/{Id}")]
         public async Task<IActionResult> GetMember(string Id)
         {
-            _logger.LogInformation("Received request to get member");
+            _logger.LogInformation($"Received request to get member. Payload - {JsonConvert.SerializeObject(new { Id })}");
             //var validationResult = _validationService.Validate(Id);
             //if (!validationResult.IsValid)
             //{
@@ -78,7 +79,7 @@ namespace pcms.Api.Controllers
         [Route("Remove/{MemberId}")]
         public async Task<IActionResult> RemoveMember(string MemberId)
         {
-            _logger.LogInformation("Received request to remove member");
+            _logger.LogInformation($"Received request to remove member. Payload - {JsonConvert.SerializeObject(new {MemberId})}");
             //var validationResult = _validationService.Validate(Id);
             //if (!validationResult.IsValid)
             //{
