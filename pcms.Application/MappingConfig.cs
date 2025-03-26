@@ -16,8 +16,10 @@ namespace pcms.Application
             var MappingConfig = new MapperConfiguration(config =>
             {
                 config.CreateMap<MemberDto, Member>().ReverseMap();
+                config.CreateMap<AddMemberDto, Member>().ReverseMap();
                 config.CreateMap<ContributionDto, Contribution>().ReverseMap();
                 config.CreateMap<AddContributionDto, Contribution>().ReverseMap();
+                config.CreateMap<UpdateContributionDto, Contribution>().ReverseMap();
             });
             return MappingConfig;
         }

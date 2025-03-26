@@ -7,14 +7,9 @@ using System.Threading.Tasks;
 
 namespace pcms.Application.Dto
 {
-    public class tokenDto
-    {
-        public string access_token { get; set; }
-        public int expiry { get; set; }
-    }
     public class MemberDto
     {
-        public string MemberId { get; set; } = Guid.NewGuid().ToString();
+        public string MemberId { get; set; } 
         public string Name { get; set; }
         public string Email { get; set; }
         public string? Phone { get; set; }
@@ -24,6 +19,16 @@ namespace pcms.Application.Dto
         public bool IsLegibleforBenefit { get; set; } = false;
         public string RSAPin { get; set; }
         public DateTime? RegistrationDate { get; set; }
-        public string Employer { get; internal set; }
+        public string Employer { get;  set; }
+    }
+
+    public class AddMemberDto
+    {
+        public string Name { get; set; }
+        public string Email { get; set; }
+        public string? Phone { get; set; }
+        public DateTime DateOfBirth { get; set; }
+        public string? RSAPin { get; set; }
+        public string Employer { get; set; }
     }
 }

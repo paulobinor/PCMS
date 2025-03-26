@@ -63,7 +63,7 @@ namespace pcms.Infra
         {
             try
             {
-                return (await GetAllAsync()).ToList();
+                return (await GetAllAsync()).Where(m => !m.IsDeleted).ToList();
                 //return "Success";
             }
             catch (Exception)
@@ -81,7 +81,7 @@ namespace pcms.Infra
                     throw new Exception($"Member with Id:{MemberId} Not Found! or does not exist");
                     //"log Not Found";
                 }
-                return null;
+                return member;
                 //return "Success";
             }
             catch (Exception)

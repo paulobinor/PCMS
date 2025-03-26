@@ -37,7 +37,7 @@ namespace pcms.Tests
         [Fact]
         public async Task RegisterMember_Should_Add_Member_And_Save()
         {
-            var memberDto = new MemberDto
+            var memberDto = new AddMemberDto
             {
                 Name = "Test User",
                 Email = "test@example.com",

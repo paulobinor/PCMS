@@ -11,10 +11,10 @@ namespace pcms.Domain.Interfaces
         //Task<string> GetTotalContributions(string memberId, DateTime startDate, DateTime endDate);
         //Task<string> GenerateStatement(string memberId, DateTime startDate, DateTime endDate);
         Task<ApiResponse<string>> DeleteMemberRecord(string memberId);
-        Task<ApiResponse<string>> AddNewMember(MemberDto memberDto);
+        Task<ApiResponse<string>> AddNewMember(AddMemberDto memberDto);
         Task<ApiResponse<string>> UpdateMember(MemberDto memberDto);
-       // Task<ApiResponse<decimal>> GetTotalContributionsAsync(string memberId);
+        // Task<ApiResponse<decimal>> GetTotalContributionsAsync(string memberId);
         Task<ApiResponse<MemberDto>> GetMember(string memberId);
+        Task<ApiResponse<List<MemberDto>>> GetAllMembers();
     }
-
 }

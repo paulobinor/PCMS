@@ -14,7 +14,7 @@ namespace pcms.Application.Services
         public async Task<ApiResponse<decimal>> GetTotalContributionsAsync(string memberId)
         {
             var member = await _unitOfWorkRepo.Members.GetMemberWithContributions(memberId);
-            var totalContributionAmount = member.Contributions.Where(c => c.IsValid && c.IsProcessed).Sum(c => c.Amount);
+            var totalContributionAmount = member.Contributions.Where(c => c.IsValid).Sum(c => c.Amount);
             var res = new ApiResponse<decimal>
             {
                 Data = totalContributionAmount,

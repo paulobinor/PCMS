@@ -11,7 +11,7 @@ using pcms.Domain.Interfaces;
 namespace pcms.Api.Controllers
 {
     [ApiController]
-    [Route("api/Members")]
+    [Route("api/")]
     [Authorize(Roles = "Admin")]
     public class BackgroundProcessesController : ControllerBase
     {
@@ -20,18 +20,20 @@ namespace pcms.Api.Controllers
         private readonly IPCMSBackgroundService _pCMSBackgroundService;
         private readonly IContributionService _contributionService;
 
-        public BackgroundProcessesController(ILogger<MemberController> logger, IMemberService memberService, ModelValidationService validationService)
+        public BackgroundProcessesController(ILogger<MemberController> logger, IMemberService memberService, ModelValidationService validationService, IContributionService contributionService, IPCMSBackgroundService pCMSBackgroundService)
         {
             _logger = logger;
             _memberService = memberService;
             _validationService = validationService;
+            _contributionService = contributionService;
+            _pCMSBackgroundService = pCMSBackgroundService;
         }
 
         public IMemberService _memberService { get; }
 
         [HttpPost]
-        [Route("Jobs/Members/{MemberId}/UpdateInterest")]
-        public async Task<IActionResult> UpdateMemberInterest([FromBody] string MemberId)
+        [Route("Jobs/{MemberId}/UpdateInterest")]
+        public async Task<IActionResult> UpdateMemberInterest(string MemberId)
         {
             _logger.LogInformation($"Received request to Update member interest. MemberId: {MemberId}");
 
@@ -50,7 +52,7 @@ namespace pcms.Api.Controllers
         }
 
         [HttpGet]
-        [Route("Jobs/Contributions/{ContributionId}/Validate")]
+        [Route("Jobs/{ContributionId}/Validate")]
         public async Task<IActionResult> ValidateMemberContribution(string ContributionId)
         {
             _logger.LogInformation($"Received request to validate member contribution. ContributionId: {ContributionId}");
@@ -62,8 +64,8 @@ namespace pcms.Api.Controllers
             var member = await _contributionService.GetContribution(ContributionId);
             if (member.ResponseCode == "00")
             {
-                await _pCMSBackgroundService.ValidateMemberContribution(ContributionId);
-                return Ok();
+                var response = await _pCMSBackgroundService.ValidateContribution(ContributionId);
+                return Ok(response);
             }
             return BadRequest(new { member.ResponseMessage, member.ResponseCode });
         }

@@ -45,7 +45,7 @@ namespace pcms.Application.Services
             return new ApiResponse<string> { Data = "", ResponseCode = "01", ResponseMessage = "We could not execute the request" };
         }
 
-        public async Task<ApiResponse<string>> AddNewMember(MemberDto memberDto)
+        public async Task<ApiResponse<string>> AddNewMember(AddMemberDto memberDto)
         {
             var member = _mapper.Map<Domain.Entities.Member>(memberDto);
              await _unitOfWorkRepo.Members.AddMember(member);
@@ -107,11 +107,11 @@ namespace pcms.Application.Services
             return response;
         }
 
-        public async Task<ApiResponse<List<MemberDto>>> GetMembers(string memberId)
+        public async Task<ApiResponse<List<MemberDto>>> GetAllMembers()
         {
             var response = new ApiResponse<List<MemberDto>>();
             List<MemberDto>? membersDto = default;
-            var memberJson = await _cacheService.GetDataAsync(memberId);
+            var memberJson = await _cacheService.GetDataAsync("allMembers");
             if (!string.IsNullOrEmpty(memberJson))
             {
                 membersDto = JsonConvert.DeserializeObject<List<MemberDto>>(memberJson);
@@ -126,7 +126,7 @@ namespace pcms.Application.Services
                 response.Data = membersDto;
                 response.ResponseMessage = "Success";
                 response.ResponseCode = "00";
-                _cacheService.SetData(memberId, JsonConvert.SerializeObject(membersDto), 36000);
+                _cacheService.SetData("allMembers", JsonConvert.SerializeObject(membersDto), 36000);
                 _logger.LogInformation("Member details retrieved successfully");
             }
             else

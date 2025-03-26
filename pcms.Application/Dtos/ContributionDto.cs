@@ -35,9 +35,9 @@ namespace pcms.Application.Dto
         public decimal? TotalCumulative { get; set; }
     }
 
-    public class AddContributionDto
+    public class UpdateContributionDto
     {
-        public string MemberId { get; set; }
+        public string ContributionId { get; set; }
 
         public decimal Amount { get; set; }
         public ContributionType Type { get; set; }

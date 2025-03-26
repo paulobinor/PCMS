@@ -7,7 +7,7 @@ namespace pcms.Application.Interfaces
         Task<ApiResponse<ContributionDto>> AddContribution(AddContributionDto contributionDto);
         Task<ApiResponse<ContributionDto>> GetContribution(string contributionId);
         Task<ApiResponse<List<ContributionDto>>> GetContributions(DateTime startDate, DateTime endDate);
-        Task<ApiResponse<ContributionDto>> UpdateContribution(ContributionDto contributionDto);
+        Task<ApiResponse<ContributionDto>> UpdateContribution(UpdateContributionDto contributionDto);
         Task<ApiResponse<List<ContributionDto>>> GetMemberContributions(string MemberId);
     }
 }

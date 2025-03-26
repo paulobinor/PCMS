@@ -4,7 +4,6 @@ using System;
 
 namespace pcms.Application.Validation
 {
-
     public class MemberDtoValidator : AbstractValidator<MemberDto>
     {
         public MemberDtoValidator()
@@ -34,4 +33,5 @@ namespace pcms.Application.Validation
             //    .NotEmpty().WithMessage("Employer is required");
         }
     }
+
 }

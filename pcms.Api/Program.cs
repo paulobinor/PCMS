@@ -45,6 +45,8 @@ builder.Services.AddHangfire(configuration => configuration
 builder.Services.AddScoped<BackGroundJobProcess>();
 builder.Services.AddScoped<ModelValidationService>();
 builder.Services.AddTransient<IValidator<AddContributionDto>, AddContributionDtoValidator>();
+builder.Services.AddTransient<IValidator<UpdateContributionDto>, UpdateContributionDtoValidator>();
+builder.Services.AddTransient<IValidator<AddMemberDto>, AddMemberDtoValidator>();
 builder.Services.AddTransient<IValidator<UserLogin>, UserLoginDtoValidator>();
 builder.Services.AddTransient<IValidator<RegisterUser>, RegisterUserDtoValidator>();
 

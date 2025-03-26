@@ -49,7 +49,7 @@ namespace pcms.Application.Services
 
                    // await _ipcmsBackgroundService.UpdateMemberInterest(contributionDto.MemberId);
 
-                    string ValidateContributionJobId = _backgroundJobClient.Enqueue(() => _ipcmsBackgroundService.ValidateMemberContribution(contributionDto.MemberId));
+                    string ValidateContributionJobId = _backgroundJobClient.Enqueue(() => _ipcmsBackgroundService.ValidateLastMemberContribution(contributionDto.MemberId));
 
                     string intrestCalcJobId = _backgroundJobClient.ContinueJobWith(ValidateContributionJobId, () => _ipcmsBackgroundService.UpdateMemberInterest(contributionDto.MemberId));
 
@@ -113,24 +113,33 @@ namespace pcms.Application.Services
             }
         }
 
-        public async Task<ApiResponse<ContributionDto>> UpdateContribution(ContributionDto contributionDto)
+        public async Task<ApiResponse<ContributionDto>> UpdateContribution(UpdateContributionDto contributionDto)
         {
             var response = new ApiResponse<ContributionDto>();
             try
             {
-                var exists = await _unitOfWorkRepo.Contributions.GetContribution(contributionDto.ContributionId);
-                if (exists == null)
+                var UpdateContribution = await _unitOfWorkRepo.Contributions.GetContribution(contributionDto.ContributionId);
+                if (UpdateContribution == null)
                 {
                     response.ResponseMessage = "Not found";
                     response.ResponseCode = "01";
                 }
-                
-                await _unitOfWorkRepo.Contributions.UpdateContribution(_mapper.Map<Contribution>(contributionDto));
+                UpdateContribution.YearForContribution = contributionDto.YearForContribution;
+                UpdateContribution.MonthForContribution = contributionDto.MonthForContribution;
+                UpdateContribution.Amount = contributionDto.Amount;
+                UpdateContribution.Type = contributionDto.Type;
+                UpdateContribution.IsValid = false;
+                UpdateContribution.IsProcessed = false;
+                UpdateContribution.status = "Pending validation";
+                UpdateContribution.Remarks = "";
+
+                //  var contribution = _mapper.Map<Contribution>(contributionDto);
+                await _unitOfWorkRepo.Contributions.UpdateContribution(UpdateContribution);
                 var result = await _unitOfWorkRepo.CompleteAsync();
                 if (result > 0)
                 {
-                    string ValidateContributionJobId = _backgroundJobClient.Enqueue(() => _ipcmsBackgroundService.ValidateMemberContribution(contributionDto.ContributionId));
-                    string UpdateIntrestJobId = _backgroundJobClient.ContinueJobWith(ValidateContributionJobId, () => _ipcmsBackgroundService.ValidateMemberContribution(contributionDto.ContributionId));
+                    string ValidateContributionJobId = _backgroundJobClient.Enqueue(() => _ipcmsBackgroundService.ValidateContribution(contributionDto.ContributionId));
+                    string UpdateIntrestJobId = _backgroundJobClient.ContinueJobWith(ValidateContributionJobId, () => _ipcmsBackgroundService.UpdateMemberInterest(contributionDto.ContributionId));
 
                     response.ResponseMessage = "Success";
                     response.ResponseCode = "00";

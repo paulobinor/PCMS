@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using pcms.Domain.Interfaces;
 using System;
 
@@ -15,7 +16,23 @@ namespace pcms.Infra
             _dbSet = context.Set<T>();
         }
 
-        public async Task<T> GetByIdAsync(string id) => await _dbSet.FindAsync(id);
+        public async Task<T> GetByIdAsync(string id)
+        {
+            try
+            {
+               var item =  await _dbSet.FindAsync(id);
+                if (item == null) 
+                {
+                   // _logger.LogInformation($"Record not found for Id: {id}");
+                    throw new Exception($"Record not found for Id: {id}");
+                }
+                return item;
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+        }
         public async Task<IEnumerable<T>> GetAllAsync() => await _dbSet.ToListAsync();
         public async Task AddAsync(T entity)
         {
@@ -27,6 +44,7 @@ namespace pcms.Infra
             {
                 throw;
             }
+
           //var res = await _context.SaveChangesAsync();
           //  if (res > 0)
           //  {

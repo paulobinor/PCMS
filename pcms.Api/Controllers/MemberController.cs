@@ -1,3 +1,5 @@
+using Azure.Core;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using pcms.Application;
 using pcms.Application.Dto;
@@ -8,6 +10,7 @@ using pcms.Domain.Interfaces;
 namespace pcms.Api.Controllers
 {
     [ApiController]
+    [Authorize]
     [Route("api/Members")]
     public class MemberController : ControllerBase
     {
@@ -25,8 +28,8 @@ namespace pcms.Api.Controllers
         public IMemberService _memberService { get; }
 
         [HttpPost]
-        [Route("AddNewMember")]
-        public async Task<IActionResult> AddNewMember([FromBody] MemberDto memberDto)
+        [Route("Add")]
+        public async Task<IActionResult> AddNewMember([FromBody] AddMemberDto memberDto)
         {
             _logger.LogInformation("Received request to add new member");
             var validationResult = _validationService.Validate(memberDto);
@@ -55,9 +58,25 @@ namespace pcms.Api.Controllers
             return Ok(await _memberService.GetMember(Id));
         }
 
-        [HttpPost]
-        [Route("Remove")]
-        public async Task<IActionResult> RemoveMember([FromBody] string MemberId)
+        [HttpGet]
+        [Route("list")]
+        public async Task<IActionResult> GetAllMembers([FromQuery] int pageNumber = 1, int pageSize = 10)
+        {
+            _logger.LogInformation("Received request to get member");
+            //var validationResult = _validationService.Validate(Id);
+            //if (!validationResult.IsValid)
+            //{
+            //    return ValidationProblem(validationResult.customProblemDetail.Detail);
+            //}
+            
+            var resp = await _memberService.GetAllMembers();
+            var pagedRes = pcms.Application.Helpers.Utilities.GetPagedList(resp.Data, pageNumber, pageSize);
+            return Ok(pagedRes);
+        }
+
+        [HttpDelete]
+        [Route("Remove/{MemberId}")]
+        public async Task<IActionResult> RemoveMember(string MemberId)
         {
             _logger.LogInformation("Received request to remove member");
             //var validationResult = _validationService.Validate(Id);

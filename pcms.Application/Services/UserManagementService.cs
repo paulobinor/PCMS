@@ -113,7 +113,7 @@ namespace pcms.Application.Services
                     claims.Add(new Claim(ClaimTypes.Role, role));
                 }
                 var token = GetToken(claims);
-                response.Data = new tokenDto { access_token = new JwtSecurityTokenHandler().WriteToken(token), expiry = (int)(token.ValidTo - DateTime.Now).TotalSeconds };
+                response.Data = new tokenDto { access_token = new JwtSecurityTokenHandler().WriteToken(token), expiry =(int)(token.ValidTo - DateTime.Now).TotalSeconds };
                 response.ResponseCode = "00";
                 response.ResponseMessage = "Success";
                 return response;
@@ -131,9 +131,9 @@ namespace pcms.Application.Services
 
             var token = new JwtSecurityToken(
 
-                issuer: ConfigSettings.Jwt.Secret,
-                audience: ConfigSettings.Jwt.Secret,
-                expires: DateTime.Now.AddHours(1),
+                issuer: ConfigSettings.Jwt.ValidIssuer,
+                audience: ConfigSettings.Jwt.ValidAudience,
+                expires: DateTime.Now.AddHours(2),
                 claims: authClaims,
                 signingCredentials: new SigningCredentials(authSigninKey, SecurityAlgorithms.HmacSha256)
             );
