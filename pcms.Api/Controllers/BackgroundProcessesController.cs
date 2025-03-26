@@ -12,7 +12,7 @@ namespace pcms.Api.Controllers
 {
     [ApiController]
     [Route("api/")]
-    [Authorize(Roles = "Admin")]
+   // [Authorize(Roles = "Admin")]
     public class BackgroundProcessesController : ControllerBase
     {
         private readonly ILogger<MemberController> _logger;

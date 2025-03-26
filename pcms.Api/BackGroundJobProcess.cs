@@ -21,15 +21,18 @@ namespace pcms.Api
         {
             try
             {
-              //  _logger.LogInformation("This job is running successfully");
-              //  Console.WriteLine("This job will execute");
-               var jobId1 = _backgroundJobClient.Enqueue(() => _pCMSBackgroundService.ValidateMemberContributions());
-                var members = await _unitOfWorkRepo.Members.GetAllMembers();
-                if (members != null)
-                {
-                    var jobId2 = _backgroundJobClient.ContinueJobWith(jobId1, () => _pCMSBackgroundService.UpdateBenefitEligibility(members));
+                //  _logger.LogInformation("This job is running successfully");
+                //  Console.WriteLine("This job will execute");
+                // var jobId1 =  _backgroundJobClient.Enqueue(() => _pCMSBackgroundService.ValidateMemberContributions());
+              //  RecurringJob.AddOrUpdate("easyjob", () => _pCMSBackgroundService.ValidateMemberContributions(), Cron.Minutely);
+              //  RecurringJob.AddOrUpdate("easyjob2", () => _pCMSBackgroundService.UpdateBenefitEligibility(), Cron.Minutely);
 
-                }
+                //var members = await _unitOfWorkRepo.Members.GetAllMembers();
+                //if (members != null)
+                //{
+                //    var jobId2 = _backgroundJobClient.ContinueJobWith("easyjob", () => _pCMSBackgroundService.UpdateBenefitEligibility(members));
+
+                //}
                 //_pCMSBackgroundService.ValidateMemberContributions().ContinueWith((n) => _pCMSBackgroundService.UpdateBenefitEligibility());
             }
             catch (Exception)

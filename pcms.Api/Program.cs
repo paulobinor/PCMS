@@ -126,21 +126,21 @@ builder.Services.Configure<IdentityOptions>(options => options.SignIn.RequireCon
 var app = builder.Build();
 GlobalJobFilters.Filters.Add(app.Services.GetRequiredService<IServerFilter>());
 
-//using (var scope = app.Services.CreateScope())
-//{
-//    var services = scope.ServiceProvider;
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
 
-//    try
-//    {
-//        var jobService = services.GetRequiredService<BackGroundJobProcess>();
-//       jobService.ProcessStartupTask(); // Call startup logic
-//    }
-//        catch (Exception ex)
-//    {
-//        var logger = services.GetRequiredService<ILogger<Program>>();
-//        logger.LogError(ex, "An error occurred while executing startup process.");
-//    }
-//}
+    try
+    {
+        var jobService = services.GetRequiredService<BackGroundJobProcess>();
+        jobService.ProcessStartupTask(); // Call startup logic
+    }
+    catch (Exception ex)
+    {
+       // var logger = services.GetRequiredService<ILogger<Program>>();
+        logger.Error(ex, "An error occurred while executing startup process.");
+    }
+}
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {

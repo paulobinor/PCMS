@@ -23,33 +23,46 @@ namespace pcms.Application.Services
             _logger = logger;
             _cacheService = cacheService;
         }
-        public async Task UpdateBenefitEligibility(List<pcms.Domain.Entities.Member> members)
+        public async Task UpdateBenefitEligibility()
         {
             _logger.LogInformation("About to compute benefit elegibility");
-          //  var list = (await _unitOfWorkRepo.Members.GetAllMembers()).Where(m=>m.IsActive);
+            var members = (await _unitOfWorkRepo.Members.GetAllMembers()).Where(m=>m.IsActive);
 
             _logger.LogInformation($"About to Process {members.Count()} records");
             int legible = 0;
             int Notlegible = 0;
             foreach (var member in members)
             {
-                var updateMember = await _unitOfWorkRepo.Members.GetMember(member.MemberId);
-                if (updateMember != null)
+                var ContributionList = (await _unitOfWorkRepo.Contributions.GetMemberContributions(member.MemberId)).Where(v => v.IsValid).OrderBy(m => m.EntryNumber);
+                if (ContributionList == null)
                 {
-                    var lastContributionDate = updateMember.Contributions.Max(x => x.ContributionDate);
+                    _logger.LogInformation($" no contributions found for {member.Name}");
+                }
+                else
+                {
+                    var lastContributionDate = ContributionList.Max(x => x.ContributionDate);
                     if (lastContributionDate != null)
                     {
-                        if ((lastContributionDate.Month - member.RegistrationDate.Month) >= 6)
+                        _logger.LogInformation($"Last contribution date for {member.Name} is {lastContributionDate}");
+                        if ((lastContributionDate - member.RegistrationDate).TotalDays >= 180)
                         {
+                            _logger.LogInformation($"Last contribution date for {member.Name} is greater than registered date by {(lastContributionDate - member.RegistrationDate).TotalDays}");
+                            member.IsEligibleForBenefit = true;
+                            _unitOfWorkRepo.Members.UpdateMember(member);
+                            _cacheService.SetData(member.MemberId, JsonConvert.SerializeObject(member), 3600);
                             legible++;
-                            updateMember.IsEligibleForBenefit = true;
-                            _unitOfWorkRepo.Members.UpdateMember(updateMember);
                         }
-                        Notlegible++;
+                        else
+                        {
+                            _logger.LogInformation($"{member.Name} does not meet the minimum requirement for eligibility");
+                            Notlegible++;
+                        }
                     }
-                    _cacheService.SetData(member.MemberId, JsonConvert.SerializeObject(updateMember), 3600);
+                    else
+                    {
+                    }
+                    _logger.LogInformation($"{member.Name} eligibility processed successfully processed");
                 }
-               
             }
             await _unitOfWorkRepo.CompleteAsync();
             _logger.LogInformation($"{members.Count()} records successfully processed with {legible} legible for benefits, while {Notlegible} not legible for benefits");

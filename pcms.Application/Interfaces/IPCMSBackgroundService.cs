@@ -5,7 +5,7 @@ namespace pcms.Application.Interfaces
 {
     public interface IPCMSBackgroundService
     {
-        Task UpdateBenefitEligibility(List<Member> members);
+        Task UpdateBenefitEligibility();
        // Task ValidateLastMemberContribution(string memberId);
         Task ValidateMemberContributions();
         Task<ApiResponse<string>> ValidateContribution(string contributionId);
