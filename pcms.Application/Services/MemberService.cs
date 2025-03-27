@@ -135,6 +135,7 @@ namespace pcms.Application.Services
             if (!string.IsNullOrEmpty(memberJson))
             {
                 membersDto = JsonConvert.DeserializeObject<List<MemberDto>>(memberJson);
+                _logger.LogInformation("Member details retrieved from cache");
             }
             else
             {

@@ -16,7 +16,6 @@ namespace UserManagementAPI.Controllers
     {
         private readonly IUserManagementService _userManagementService;
         private readonly ModelValidationService _validationService;
-        // private readonly UserManagement.Service.Email.IEmailService _emailService;
 
         private readonly ILogger<AuthController> _logger;
 

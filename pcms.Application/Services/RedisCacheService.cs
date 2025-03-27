@@ -1,5 +1,4 @@
-﻿using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using pcms.Domain.Config;
 using pcms.Domain.Interfaces;
@@ -16,7 +15,6 @@ namespace pcms.Application.Services
         public RedisCacheService(ILogger<RedisCacheService> logger)
         {
             _logger = logger;
-           // AppSettings appSettings = ConfigSettings.AppSettingsConfig;
 
             var lazyConnection = new Lazy<ConnectionMultiplexer>(() =>
             {
@@ -61,7 +59,6 @@ namespace pcms.Application.Services
             {
                 _logger.LogInformation($"Error Message: {ex.Message}, {ex.StackTrace}");
                 return default;
-                // throw ex.InnerException;
             }
             catch (Exception ex)
             {
@@ -74,7 +71,6 @@ namespace pcms.Application.Services
         {
             try
             {
-                //  var json = JsonConvert.SerializeObject(value, Formatting.None, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
                 var isSet = _db.StringSet(key, value, TimeSpan.FromSeconds(duration));
 
                 return isSet;
@@ -87,28 +83,10 @@ namespace pcms.Application.Services
             }
         }
 
-        //public async Task<bool> SetData<T>(string key, T value, int timespan)
-        //{
-        //    try
-        //    {
-        //        var json = JsonConvert.SerializeObject(value, Formatting.None, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
-        //        var isSet = await _db.StringSetAsync(key, json, TimeSpan.FromSeconds(timespan));
-
-        //        return isSet;
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogInformation($"Error Message: {ex.Message}, {ex.StackTrace}");
-        //        return default;
-        //        // throw ex;
-        //    }
-        //}
-
         public async Task<bool> SetDataAsync(string key, string value, int timespan)
         {
             try
             {
-                //  var json = JsonConvert.SerializeObject(value, Formatting.None, new JsonSerializerSettings { ReferenceLoopHandling = ReferenceLoopHandling.Ignore });
                 var isSet = await _db.StringSetAsync(key, value, TimeSpan.FromSeconds(timespan));
 
                 return isSet;
@@ -132,15 +110,12 @@ namespace pcms.Application.Services
                     {
                         _db.KeyDelete(key);
                     }
-                    // return false;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogInformation($"Error Message: {ex.Message}, {ex.StackTrace}");
-                    //  return false;
                 }
             }
-            // return false;
         }
 
         public async Task RemoveDataAsync(string key)
@@ -155,15 +130,12 @@ namespace pcms.Application.Services
                     {
                         _ = _db.KeyDeleteAsync(key);
                     }
-                    //  return false;
                 }
                 catch (Exception ex)
                 {
                     _logger.LogInformation($"Error Message: {ex.Message}, {ex.StackTrace}");
-                    //  return false;
                 }
             }
-            //  return false;
         }
     }
 }
