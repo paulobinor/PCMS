@@ -1,3 +1,4 @@
+using AutoMapper.Execution;
 using Castle.Core.Logging;
 using Microsoft.Extensions.Logging;
 using Moq;
@@ -18,7 +19,8 @@ namespace pcms.Tests
         private Mock<ICacheService>  _cacheServiceMock;
         private Mock<IMemberServiceRepo> _memberServiceRepo;
         private IMemberService _memberService;
-        private Mock<IGenericRepository<Member>> _memberRepositoryMock;
+        private Mock<IMemberService> _memberServiceMock;
+        private Mock<IGenericRepository<pcms.Domain.Entities.Member>> _memberRepositoryMock;
 
         public MemberServiceTests()
         {
@@ -28,16 +30,16 @@ namespace pcms.Tests
             _cacheServiceMock = new Mock<ICacheService>();
             _memberServiceRepo = new Mock<IMemberServiceRepo>();
             _unitOfWorkMock = new Mock<IUnitOfWorkRepo>();
-            _memberRepositoryMock = new Mock<IGenericRepository<Member>>();
-            _unitOfWorkMock.Setup(u => u.Members).Returns(_memberServiceRepo.Object);
-           // _mockDbContext = new Mock<AppDBContext>();
-            _memberService = new MemberService(_unitOfWorkMock.Object, _validationService.Object, _cacheServiceMock.Object, _loggerMock.Object);
+            _memberRepositoryMock = new Mock<IGenericRepository<pcms.Domain.Entities.Member>>();
+            // _mockDbContext = new Mock<AppDBContext>();
+            _memberServiceMock = new Mock<IMemberService>();
+          //  _memberService = new Mock<MemberService(_unitOfWorkMock.Object, _validationService.Object, _cacheServiceMock.Object, _loggerMock.Object);
         }
 
         [Fact]
         public async Task RegisterMember_Should_Add_Member_And_Save()
         {
-            var member = new Member
+            var memberDto = new AddMemberDto
             {
                 Name = "Test User",
                 Email = "test@example.com",
@@ -46,12 +48,12 @@ namespace pcms.Tests
                 Employer = "Test Employer",
                 RSAPin = "PIN12345"
             };
-            await _memberServiceRepo.Object.AddMember(member);
+
+            _unitOfWorkMock.Setup(u => u.Members).Returns(_memberServiceRepo.Object);
+
+            await _memberServiceMock.Object.AddNewMember(memberDto);
             await _unitOfWorkMock.Object.CompleteAsync();
-            // await _memberService.AddNewMember(memberDto);
 
-
-            _memberServiceRepo.Verify(u => u.AddMember(It.IsAny<Member>()), Times.Once);
             _unitOfWorkMock.Verify(u => u.CompleteAsync(), Times.Once);
         }
 
@@ -73,8 +75,9 @@ namespace pcms.Tests
         //[Fact]
         //public async Task RemoveMember_ShouldSoftDeleteMember()
         //{
+
         //    // Arrange
-        //    var member = new Member { MemberId = Guid.NewGuid().ToString(), Name = "Jane Doe", IsDeleted = false };
+        //    var member = new pcms.Domain.Entities.Member { MemberId = Guid.NewGuid().ToString(), Name = "Jane Doe", IsDeleted = false };
         //    _memberRepositoryMock.Setup(repo => repo.GetByIdAsync(member.MemberId)).ReturnsAsync(member);
 
         //    // Act
