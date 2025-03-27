@@ -22,7 +22,7 @@ namespace pcms.Api
         {
             try
             {
-                await _next(context); // Process request
+                await _next(context); 
             }
             catch (Exception ex)
             {

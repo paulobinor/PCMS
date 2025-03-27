@@ -17,11 +17,9 @@ namespace pcms.Application.Services
 
         public async Task HandleFailedTransactionAsync(string jobId, string errorMessage)
         {
-            // Log failure
             _logger.LogError($"Hangfire Job Failed: {jobId}. Error: {errorMessage}");
 
-            // Notify administrator
-            string adminEmail = "admin@pensionfund.com";
+            string adminEmail = "admin@nlpc.com";
             string subject = "Pension System - Failed Transaction Alert";
             string message = $"Transaction with Job ID: {jobId} failed. Error: {errorMessage}";
 

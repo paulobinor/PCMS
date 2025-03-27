@@ -14,7 +14,6 @@ namespace pcms.Application.Services
 
         public async Task SendEmailAsync(string recipient, string subject, string message)
         {
-            // Simulate sending an email
             _logger.LogInformation($"Email sent to {recipient} - {subject}");
             await Task.CompletedTask;
         }

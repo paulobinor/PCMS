@@ -171,10 +171,6 @@ namespace pcms.Application.Services
             _logger.LogInformation($"Received request to calculate member interest");
             try
             {
-                //var members = (await _unitOfWorkRepo.Members.GetAllMembers()).Where(m=>m.IsActive).ToList();
-
-                //  int ProcessedCount = 0;
-                //  int UnProcessed = 0;
                 _logger.LogInformation($"Will process {members.Count} member records");
                 foreach (var member in members)
                 {
@@ -213,10 +209,6 @@ namespace pcms.Application.Services
             _logger.LogInformation($"Received request to calculate member interest");
             try
             {
-                //var members = (await _unitOfWorkRepo.Members.GetAllMembers()).Where(m=>m.IsActive).ToList();
-
-                //  int ProcessedCount = 0;
-                //  int UnProcessed = 0;
                 var ContributionList = (await _unitOfWorkRepo.Contributions.GetMemberContributions(memberId)).Where(v => v.IsValid).OrderBy(m => m.EntryNumber);
 
                 if (ContributionList != null)

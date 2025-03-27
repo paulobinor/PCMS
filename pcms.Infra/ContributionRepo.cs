@@ -44,16 +44,6 @@ namespace pcms.Infra
         }
 
        
-        //public async Task<string> GenerateStatementAsync(string memberId, DateTime startDate, DateTime endDate)
-        //{
-
-        //    var member = await GetByIdAsync(memberId);
-        //    if (member == null) { throw new Exception("Member not found"); }
-
-
-        //    var total = await GetTotalContributionsAsync(memberId, startDate, endDate);
-        //    return $"Statement for {member.Name}: Total Contributions = {total:C}";
-        //}
 
         public async Task<Contribution> GetContribution(string contributionId)
         {

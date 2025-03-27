@@ -54,14 +54,7 @@ namespace pcms.Application.Services
                 if (res.Succeeded)
                 {
                     var roleRes = await _userManager.AddToRoleAsync(identityUser, registerUser.UserRole.ToString());
-                    //var token = await _userManager.GenerateEmailConfirmationTokenAsync(identityUser);
-                    //if (token != null)
-                    //{
-                    //    var confirmationLink = Url.Action(nameof(ConfirmEmail), "Auth", new {token, identityUser.Email});
-                    //    var message = new Message(new string[] { identityUser.Email! }, "Confirmation email link", confirmationLink);
-                    //    _emailService.SendEmail(message);
-                    //}
-
+                  
                     response.ResponseCode = "00";
                     response.ResponseMessage = "User created successfully";
                 }

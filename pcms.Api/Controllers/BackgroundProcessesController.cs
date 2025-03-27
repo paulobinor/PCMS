@@ -12,7 +12,7 @@ namespace pcms.Api.Controllers
 {
     [ApiController]
     [Route("api/")]
-   // [Authorize(Roles = "Admin")]
+    [Authorize]
     public class BackgroundProcessesController : ControllerBase
     {
         private readonly ILogger<MemberController> _logger;
@@ -37,11 +37,6 @@ namespace pcms.Api.Controllers
         {
             _logger.LogInformation($"Received request to Update member interest. MemberId: {MemberId}");
 
-            //var validationResult = _validationService.Validate(memberDto);
-            //if (!validationResult.IsValid)
-            //{
-            //    return ValidationProblem(validationResult.customProblemDetail.Detail);
-            //}
             var response = await _memberService.GetMember(MemberId);
             if (response.ResponseCode == "00")
             {
@@ -52,37 +47,13 @@ namespace pcms.Api.Controllers
             return BadRequest(response);
         }
 
-        //[HttpPost]
-        //[Route("Jobs/{ContributionId}/UpdateInterest")]
-        //public async Task<IActionResult> UpdateContributionInterest(string ContributionId)
-        //{
-        //    _logger.LogInformation($"Received request to Update member interest. ContributionId: {ContributionId}");
-
-        //    //var validationResult = _validationService.Validate(memberDto);
-        //    //if (!validationResult.IsValid)
-        //    //{
-        //    //    return ValidationProblem(validationResult.customProblemDetail.Detail);
-        //    //}
-
-        //    await _pCMSBackgroundService.UpdateMemberInterest(ContributionId);
-        //    //var member = await _memberService.GetMember(MemberId);
-        //    if (ContributionId == null)
-        //    {
-        //        return BadRequest(new { ResponseMessage = "Invalid Id provided", ResponseCode = "01" });
-        //    }
-        //    return Ok(new { ResponseMessage = "Success", ResponseCode = "00" });
-        //}
-
+        
         [HttpGet]
         [Route("Jobs/{ContributionId}/Validate")]
         public async Task<IActionResult> ValidateMemberContribution(string ContributionId)
         {
             _logger.LogInformation($"Received request to validate member contribution. ContributionId: {ContributionId}");
-            //var validationResult = _validationService.Validate(Id);
-            //if (!validationResult.IsValid)
-            //{
-            //    return ValidationProblem(validationResult.customProblemDetail.Detail);
-            //}
+           
             var contribution = await _contributionService.GetContribution(ContributionId);
             if (contribution.ResponseCode == "00")
             {

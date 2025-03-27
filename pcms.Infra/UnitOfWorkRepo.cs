@@ -8,7 +8,6 @@ namespace pcms.Infra
         private readonly AppDBContext _context;
         public IMemberServiceRepo Members { get; }
         public IContributionRepo Contributions { get; }
-       // private readonly ILogger<MemberServiceRepo> _logger;
         public UnitOfWorkRepo(AppDBContext context, ILogger<MemberServiceRepo> logger)
         {
             _context = context;

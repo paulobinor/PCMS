@@ -42,10 +42,13 @@ namespace pcms.Tests
                 Name = "Test User",
                 Email = "test@example.com",
                 Phone = "+2348100000000",
-                DateOfBirth = new DateTime(1990, 1, 1)
+                DateOfBirth = new DateTime(1990, 1, 1),
+                Employer = "Test Employer",
+                RSAPin = "PIN12345"
             };
 
             await _memberService.AddNewMember(memberDto);
+            
 
             _memberRepositoryMock.Verify(u => u.AddAsync(It.IsAny<Member>()), Times.Once);
             _unitOfWorkMock.Verify(u => u.CompleteAsync(), Times.Once);
@@ -55,9 +58,9 @@ namespace pcms.Tests
         //public async Task CheckEligibility_ShouldReturnFalse_IfContributionPeriodIsLessThanRequired()
         //{
         //    // Arrange
-        //    var memberId = Guid.NewGuid();
-        //    var contributions = new List<Contribution> { new Contribution { Amount = 5000, Date = DateTime.UtcNow.AddMonths(-2) } };
-        //    _unitOfWorkMock.Setup(uow => uow.Contributions.GetByMemberIdAsync(memberId)).ReturnsAsync(contributions);
+        //    var memberId = Guid.NewGuid().ToString();
+        //    var contributions = new List<Contribution> { new Contribution { Amount = 5000, ContributionDate = DateTime.UtcNow.AddMonths(-2), YearForContribution = 2025, MonthForContribution = 4 } };
+        //    _unitOfWorkMock.Setup(uow => uow.Contributions.GetMemberContributions(memberId)).ReturnsAsync(contributions);
 
         //    // Act
         //    var isEligible = await _memberService.CheckEligibilityAsync(memberId);

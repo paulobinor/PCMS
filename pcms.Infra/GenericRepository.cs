@@ -45,15 +45,6 @@ namespace pcms.Infra
                 throw;
             }
 
-          //var res = await _context.SaveChangesAsync();
-          //  if (res > 0)
-          //  {
-          //      return true;
-          //  }
-          //  else
-          //  {
-          //      return false;
-          //  }
         }
         public async Task Update(T entity)
         {

@@ -133,15 +133,13 @@ using (var scope = app.Services.CreateScope())
     try
     {
         var jobService = services.GetRequiredService<BackGroundJobProcess>();
-        jobService.ProcessStartupTask(); // Call startup logic
+        jobService.ProcessStartupTask(); 
     }
     catch (Exception ex)
     {
-       // var logger = services.GetRequiredService<ILogger<Program>>();
         logger.Error(ex, "An error occurred while executing startup process.");
     }
 }
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();

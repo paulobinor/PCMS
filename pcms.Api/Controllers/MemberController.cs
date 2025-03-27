@@ -47,11 +47,7 @@ namespace pcms.Api.Controllers
         public async Task<IActionResult> GetMember(string Id)
         {
             _logger.LogInformation($"Received request to get member. Payload - {JsonConvert.SerializeObject(new { Id })}");
-            //var validationResult = _validationService.Validate(Id);
-            //if (!validationResult.IsValid)
-            //{
-            //    return ValidationProblem(validationResult.customProblemDetail.Detail);
-            //}
+           
             if (string.IsNullOrEmpty(Id))
             {
                 return BadRequest(new ApiResponse<string> { ResponseCode = "01", ResponseMessage = "Invalid Id provided" });
@@ -64,11 +60,7 @@ namespace pcms.Api.Controllers
         public async Task<IActionResult> GetAllMembers([FromQuery] int pageNumber = 1, int pageSize = 10)
         {
             _logger.LogInformation("Received request to get member");
-            //var validationResult = _validationService.Validate(Id);
-            //if (!validationResult.IsValid)
-            //{
-            //    return ValidationProblem(validationResult.customProblemDetail.Detail);
-            //}
+           
             
             var resp = await _memberService.GetAllMembers();
             var pagedRes = pcms.Application.Helpers.Utilities.GetPagedList(resp.Data, pageNumber, pageSize);
@@ -80,11 +72,7 @@ namespace pcms.Api.Controllers
         public async Task<IActionResult> RemoveMember(string MemberId)
         {
             _logger.LogInformation($"Received request to remove member. Payload - {JsonConvert.SerializeObject(new {MemberId})}");
-            //var validationResult = _validationService.Validate(Id);
-            //if (!validationResult.IsValid)
-            //{
-            //    return ValidationProblem(validationResult.customProblemDetail.Detail);
-            //}
+           
             if (string.IsNullOrEmpty(MemberId))
             {
                 _logger.LogInformation("Invalid Id provided.");

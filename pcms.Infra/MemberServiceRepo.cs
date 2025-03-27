@@ -52,7 +52,6 @@ namespace pcms.Infra
                 member.IsDeleted = true;
                 member.IsActive = false;
                 Update(member);
-                //return "Success";
             }
             catch (Exception ex)
             {
@@ -80,10 +79,8 @@ namespace pcms.Infra
                 if (member == null)
                 {
                     throw new Exception($"Member with Id:{MemberId} Not Found! or does not exist");
-                    //"log Not Found";
                 }
                 return member;
-                //return "Success";
             }
             catch (Exception)
             {
@@ -95,7 +92,6 @@ namespace pcms.Infra
             try
             {
                 return  await _context.Members.Include("Contributions").FirstOrDefaultAsync(m => m.MemberId == MemberId);
-                //return "Success";
             }
             catch (Exception)
             {

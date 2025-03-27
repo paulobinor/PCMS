@@ -44,16 +44,9 @@ namespace pcms.Application.Services
                 var res = await _unitOfWorkRepo.CompleteAsync();
                 if (res > 0)
                 {
-
-                   // await _ipcmsBackgroundService.ValidateMemberContribution(contributionDto.MemberId);
-
-                   // await _ipcmsBackgroundService.UpdateMemberInterest(contributionDto.MemberId);
-
                     string ValidateContributionJobId = _backgroundJobClient.Enqueue(() => _ipcmsBackgroundService.ValidateContribution(contribution.ContributionId));
 
-                    //string intrestCalcJobId = _backgroundJobClient.ContinueJobWith(ValidateContributionJobId, () => _ipcmsBackgroundService.UpdateLastContributionInterest(contributionDto.MemberId));
-
-                    // response.Data = _mapper.Map<ContributionDto>(memberContribution);
+                    
                     response.ResponseMessage = "Success";
                     response.ResponseCode = "00";
                     _logger.LogInformation($"Contribution details created successfully for MemberId: {contributionDto.MemberId}");
@@ -139,7 +132,6 @@ namespace pcms.Application.Services
                 if (result > 0)
                 {
                     string ValidateContributionJobId = _backgroundJobClient.Enqueue(() => _ipcmsBackgroundService.ValidateContribution(contributionDto.ContributionId));
-                  //  string UpdateIntrestJobId = _backgroundJobClient.ContinueJobWith(ValidateContributionJobId, () => _ipcmsBackgroundService.UpdateLastContributionInterest(UpdateContribution.MemberId));
 
                     response.ResponseMessage = "Success";
                     response.ResponseCode = "00";

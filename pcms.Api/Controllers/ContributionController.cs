@@ -68,11 +68,7 @@ namespace pcms.Api.Controllers
             {
                 return BadRequest(new ApiResponse<string> { ResponseCode = "01", ResponseMessage = "Invalid Id provided" });
             }
-            //var validationResult = _validationService.Validate(contributionDto);
-            //if (!validationResult.IsValid)
-            //{
-            //    return BadRequest(validationResult.customProblemDetail.Detail);
-            //}
+           
             return Ok(await _contributionService.GetContribution(ContribuionId));
         }
 
@@ -85,11 +81,7 @@ namespace pcms.Api.Controllers
             {
                 return BadRequest(new ApiResponse<string> { ResponseCode = "01", ResponseMessage = "Invalid Id provided" });
             }
-            //var validationResult = _validationService.Validate(contributionDto);
-            //if (!validationResult.IsValid)
-            //{
-            //    return BadRequest(validationResult.customProblemDetail.Detail);
-            //}
+          
 
             var resp = await _contributionService.GetMemberContributions(MemberId);
             var pagedRes = pcms.Application.Helpers.Utilities.GetPagedList(resp.Data, pageNumber, pageSize);
