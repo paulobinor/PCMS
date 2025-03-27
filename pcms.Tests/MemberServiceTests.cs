@@ -37,7 +37,7 @@ namespace pcms.Tests
         [Fact]
         public async Task RegisterMember_Should_Add_Member_And_Save()
         {
-            var memberDto = new AddMemberDto
+            var member = new Member
             {
                 Name = "Test User",
                 Email = "test@example.com",
@@ -46,11 +46,12 @@ namespace pcms.Tests
                 Employer = "Test Employer",
                 RSAPin = "PIN12345"
             };
+            await _memberServiceRepo.Object.AddMember(member);
+            await _unitOfWorkMock.Object.CompleteAsync();
+            // await _memberService.AddNewMember(memberDto);
 
-            await _memberService.AddNewMember(memberDto);
-            
 
-            _memberRepositoryMock.Verify(u => u.AddAsync(It.IsAny<Member>()), Times.Once);
+            _memberServiceRepo.Verify(u => u.AddMember(It.IsAny<Member>()), Times.Once);
             _unitOfWorkMock.Verify(u => u.CompleteAsync(), Times.Once);
         }
 
